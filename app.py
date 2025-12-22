@@ -25,15 +25,15 @@ st.markdown("""
 # -----------------------------------------------------------------------------
 @st.cache_data(show_spinner=False)
 def get_rfm_data():
-    # Google Drive Dosya ID'si (Senin verdiğin linkten alındı)
+    # Google Drive Dosya ID'si
     file_id = '1MUbla2YNYsd7sq61F8QL4OBnitw8tsEE'
     
     # Direkt indirme linki oluşturuluyor
     drive_url = f'https://drive.google.com/uc?id={file_id}'
     
     # Excel'i Drive'dan oku
-    # Not: sheet_name="Year 2009-2010" senin verine özeldir, hata alırsan kaldırabilirsin.
-    df_ = pd.read_excel(drive_url, sheet_name="Year 2009-2010")
+    # DÜZELTME: engine='openpyxl' parametresi eklendi!
+    df_ = pd.read_excel(drive_url, sheet_name="Year 2009-2010", engine='openpyxl')
     df = df_.copy()
     
     # Veri Temizliği ve Hazırlığı
@@ -126,7 +126,7 @@ if data_loaded:
         
         st.markdown("---")
         st.caption("Designed & Developed by")
-        st.markdown("**Veri Bilimci**") # Buraya kendi adını yazabilirsin
+        st.markdown("**Özkan** | Data Scientist") 
 
     # --- ANA EKRAN ---
     if run_btn:
