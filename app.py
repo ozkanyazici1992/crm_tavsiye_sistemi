@@ -1,38 +1,38 @@
 import streamlit as st
 import datetime as dt
 import pandas as pd
+import random  # Rastgele seçim için gerekli kütüphane
 
 # -----------------------------------------------------------------------------
 # SAYFA AYARLARI VE PROFESYONEL TASARIM
 # -----------------------------------------------------------------------------
 st.set_page_config(page_title="CRM Analitik Paneli", layout="wide", page_icon="📊")
 
-# Özelleştirilmiş Mavi Tema CSS
+# Özelleştirilmiş Mavi/Turkuaz Tema CSS
 st.markdown("""
 <style>
     h1 { color: #0f172a; font-family: 'Helvetica', sans-serif; }
     h2 { color: #1e40af; }
     h3 { color: #3b82f6; }
     [data-testid="stMetricValue"] { color: #1d4ed8; font-weight: 700; }
-    [data-testid="stSidebar"] { background-color: #f8fafc; border-right: 1px solid #e2e8f0; }
+    [data-testid="stSidebar"] { background-color: #e0f2f1; border-right: 1px solid #b2dfdb; } /* Açık Turkuaz Arkaplan */
     .stButton>button { color: white; background-color: #2563EB; border: none; border-radius: 8px; padding: 0.5rem 1rem; width: 100%; }
     .stButton>button:hover { background-color: #1d4ed8; }
+    /* Rastgele butonu için özel stil (opsiyonel, CSS ile ikinci butonu hedeflemek zor olabilir, standart bırakıldı) */
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 1. VERİ İŞLEME VE ANALİZ MOTORU (Google Drive Entegrasyonu)
+# 1. VERİ İŞLEME VE ANALİZ MOTORU
 # -----------------------------------------------------------------------------
 @st.cache_data(show_spinner=False)
 def get_rfm_data():
     # Google Drive Dosya ID'si
     file_id = '1MUbla2YNYsd7sq61F8QL4OBnitw8tsEE'
     
-    # Direkt indirme linki oluşturuluyor
     drive_url = f'https://drive.google.com/uc?id={file_id}'
     
     # Excel'i Drive'dan oku
-    # DÜZELTME: engine='openpyxl' parametresi eklendi!
     df_ = pd.read_excel(drive_url, sheet_name="Year 2009-2010", engine='openpyxl')
     df = df_.copy()
     
@@ -100,18 +100,22 @@ def create_strategy(segment):
 # 3. KULLANICI ARAYÜZÜ (DASHBOARD)
 # -----------------------------------------------------------------------------
 
+# Session State Başlatma (Hafıza)
+if 'selected_customer_id' not in st.session_state:
+    st.session_state.selected_customer_id = None
+
 st.title("📈 CRM & Müşteri Segmentasyon Analizi")
-st.markdown("**Proje Kapsamı:** Online Retail verisi (Google Drive Entegrasyonlu) kullanılarak RFM analizi yapılmıştır.")
+st.markdown("**Proje Kapsamı:** Online Retail verisi kullanılarak RFM analizi yapılmıştır. Manuel arama yapabilir veya rastgele müşteri önerebilirsiniz.")
 st.markdown("---")
 
 # Veri Yükleme
-with st.spinner('Veriler Google Drive üzerinden çekiliyor ve işleniyor... (Bu işlem internet hızına bağlıdır)'):
+with st.spinner('Veriler Google Drive üzerinden çekiliyor...'):
     try:
         rfm_df = get_rfm_data()
         data_loaded = True
     except Exception as e:
         st.error(f"Veri çekilirken hata oluştu: {e}")
-        st.warning("Lütfen Google Drive dosyasının 'Herkesle Paylaş' (Anyone with the link) modunda olduğundan emin olun.")
+        st.warning("Google Drive dosya izinlerini kontrol ediniz.")
         data_loaded = False
 
 if data_loaded:
@@ -121,23 +125,39 @@ if data_loaded:
         st.write(f"Toplam Müşteri: **{len(rfm_df):,}**")
         st.markdown("---")
         
+        # 1. Manuel Giriş Alanı
+        st.subheader("🔍 Manuel Arama")
         input_id = st.number_input("Müşteri ID Giriniz:", min_value=0, step=1)
-        run_btn = st.button("Analizi Getir")
-        
-        st.markdown("---")
-        st.caption("Designed & Developed by")
-        st.markdown("**Özkan** | Data Scientist") 
+        if st.button("Sorgula", key="btn_manual"):
+            st.session_state.selected_customer_id = input_id
 
-    # --- ANA EKRAN ---
-    if run_btn:
-        if input_id in rfm_df.index:
-            cust = rfm_df.loc[input_id]
-            st.success(f"Analiz Tamamlandı: Müşteri ID {input_id}")
+        st.markdown("---")
+        
+        # 2. Rastgele Öneri Alanı
+        st.subheader("🎲 Şanslı Müşteri")
+        if st.button("Rastgele Getir", key="btn_random"):
+            # Veri setindeki ID'lerden rastgele birini seçip hafızaya atıyoruz
+            random_id = random.choice(rfm_df.index.tolist())
+            st.session_state.selected_customer_id = random_id
+            
+        st.markdown("---")
+        st.caption("Designed by Özkan | Data Scientist") 
+
+    # --- ANA EKRAN GÖSTERİMİ ---
+    # Eğer hafızada (session_state) bir ID varsa onu göster
+    if st.session_state.selected_customer_id:
+        current_id = st.session_state.selected_customer_id
+        
+        if current_id in rfm_df.index:
+            cust = rfm_df.loc[current_id]
+            
+            # Başlıkta ID'yi göster
+            st.success(f"Analiz Tamamlandı: Müşteri ID **{current_id}**")
             
             col1, col2, col3 = st.columns(3)
-            col1.metric("Recency", f"{cust['Recency']} Gün")
-            col2.metric("Frequency", f"{cust['Frequency']} İşlem")
-            col3.metric("Monetary", f"{cust['Monetary']:.2f} ₺")
+            col1.metric("Recency (Yenilik)", f"{cust['Recency']} Gün")
+            col2.metric("Frequency (Sıklık)", f"{cust['Frequency']} İşlem")
+            col3.metric("Monetary (Tutar)", f"{cust['Monetary']:.2f} ₺")
             
             st.markdown("---")
             
@@ -147,9 +167,11 @@ if data_loaded:
                 st.info(f"🏷️ **{cust['Segment']}**")
             with col_act:
                 st.subheader("Aksiyon Planı")
-                st.success(f"💡 {create_strategy(cust['Segment'])}")
+                st.warning(f"💡 {create_strategy(cust['Segment'])}")
                 
         else:
-            st.error(f"Hata: {input_id} numaralı müşteri bulunamadı.")
-    elif not run_btn:
-        st.info("👈 Analize başlamak için sol menüden bir Müşteri ID giriniz.")
+            st.error(f"Hata: {current_id} numaralı müşteri veritabanında bulunamadı.")
+            
+    else:
+        # Açılışta boş ekran yerine bilgi mesajı
+        st.info("👈 Analize başlamak için sol menüden bir ID girin veya 'Rastgele Getir' butonuna basın.")
