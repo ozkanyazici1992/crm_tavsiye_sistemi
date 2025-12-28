@@ -3,28 +3,69 @@ import datetime as dt
 import pandas as pd
 import random
 import plotly.express as px
+import plotly.graph_objects as go
 
 # -----------------------------------------------------------------------------
-# 1. SAYFA AYARLARI VE TASARIM
+# 1. SAYFA AYARLARI VE MODERN TASARIM (CSS ENJEKSİYONU)
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="CRM Analitik Paneli", layout="wide", page_icon="📊")
+st.set_page_config(page_title="CRM Pro Analytics", layout="wide", page_icon="💎", initial_sidebar_state="expanded")
 
-# Özel CSS: Şık bir görünüm için
+# Modern CRM CSS Tasarımı
 st.markdown("""
 <style>
-    .stApp { background-color: #f8fafc; }
-    h1 { color: #1e3a8a; font-family: 'Helvetica', sans-serif; font-weight: 700; }
-    h2, h3 { color: #1d4ed8; }
-    [data-testid="stMetricValue"] { color: #2563eb; font-weight: bold; }
-    [data-testid="stSidebar"] { background-color: #ffffff; border-right: 1px solid #e2e8f0; }
-    .stButton>button { 
-        background: linear-gradient(to right, #2563eb, #1d4ed8); 
-        color: white; border: none; border-radius: 8px; 
-        padding: 0.6rem; width: 100%; font-weight: 600;
-        transition: transform 0.2s;
+    /* Genel Arkaplan */
+    .stApp {
+        background-color: #f0f2f6;
     }
-    .stButton>button:hover { transform: scale(1.02); }
-    .css-1d391kg { padding-top: 2rem; }
+    
+    /* Üst Boşluğu Azaltma */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    /* KART TASARIMI (Beyaz kutular + Gölge) */
+    div.css-1r6slb0, div.stDataFrame, div[data-testid="stMetric"] {
+        background-color: white;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e0e0e0;
+    }
+
+    /* Başlıklar */
+    h1, h2, h3 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #0f172a;
+        font-weight: 700;
+    }
+    
+    /* Metrik Değerleri */
+    [data-testid="stMetricValue"] {
+        font-size: 26px;
+        color: #2563eb;
+    }
+
+    /* Sidebar Düzenlemesi */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e5e7eb;
+    }
+    
+    /* Buton Tasarımı */
+    .stButton>button {
+        background: linear-gradient(90deg, #4f46e5 0%, #3b82f6 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        height: 3em;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -33,22 +74,19 @@ st.markdown("""
 # -----------------------------------------------------------------------------
 @st.cache_data(show_spinner=False)
 def get_rfm_data():
-    # Dosya adını sabitliyoruz. Dosya app.py ile AYNI klasörde olmalı.
     file_path = 'online_retail_II.xlsx'
-    
     try:
-        # Excel okuma
         df_ = pd.read_excel(file_path, sheet_name="Year 2009-2010", engine='openpyxl')
         df = df_.copy()
         
-        # --- Veri Temizliği ---
+        # Temizlik
         df.dropna(subset=["Customer ID"], inplace=True)
         df = df[~df["Invoice"].str.contains("C", na=False)]
         df = df[(df['Quantity'] > 0) & (df['Price'] > 0)]
         df["TotalPrice"] = df["Quantity"] * df["Price"]
         df["Customer ID"] = df["Customer ID"].astype(int)
         
-        # --- RFM Metrikleri ---
+        # RFM Hesaplama
         last_date = df["InvoiceDate"].max()
         today_date = last_date + dt.timedelta(days=2)
         
@@ -61,12 +99,12 @@ def get_rfm_data():
         rfm.columns = ['Recency', 'Frequency', 'Monetary']
         rfm = rfm[rfm["Monetary"] > 0]
         
-        # --- Skorlama ---
+        # Skorlar
         rfm["recency_score"] = pd.qcut(rfm['Recency'], 5, labels=[5, 4, 3, 2, 1])
         rfm["frequency_score"] = pd.qcut(rfm['Frequency'].rank(method="first"), 5, labels=[1, 2, 3, 4, 5])
         rfm["RFM_SCORE"] = (rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str))
         
-        # --- Segmentasyon ---
+        # Segmentasyon Haritası
         seg_map = {
             r'[1-2][1-2]': 'Hibernating',
             r'[1-2][3-4]': 'At Risk',
@@ -80,7 +118,6 @@ def get_rfm_data():
             r'5[4-5]': 'Champions'
         }
         rfm['Segment'] = rfm['RFM_SCORE'].replace(seg_map, regex=True)
-        
         return rfm
 
     except FileNotFoundError:
@@ -88,108 +125,159 @@ def get_rfm_data():
     except Exception as e:
         return f"HATA: {str(e)}"
 
-# -----------------------------------------------------------------------------
-# 3. AKSİYON PLANLARI
-# -----------------------------------------------------------------------------
 def create_strategy(segment):
     strategies = {
-        "Champions": "🏆 **Şampiyon Müşteri:** Yeni ürünleri ilk bunlar denemeli. VIP hissettirin.",
-        "Loyal Customers": "💎 **Sadık:** Harcama alışkanlıklarını ödüllendirin. Cross-sell yapın.",
-        "Cant Loose": "⚠️ **Kaybedilemez:** Uzun zamandır yoklar. Agresif indirimle geri çağırın.",
-        "At Risk": "🚑 **Riskli:** Kaybetmek üzeresiniz. Kişiselleştirilmiş e-posta atın.",
-        "New Customers": "🌱 **Yeni:** Hoşgeldin kampanyası ile ikinci satın almayı teşvik edin.",
-        "Hibernating": "💤 **Uykuda:** Çok masraf yapmadan ara ara kendinizi hatırlatın.",
-        "Need Attention": "🔔 **Dikkat:** Kısa süreli fırsatlarla dürterek uyandırın.",
-        "Potential Loyalists": "📈 **Potansiyel:** Sadakat kartı veya puan sistemi sunun.",
-        "Promising": "🤞 **Umut Vaat Eden:** Küçük hediyelerle memnuniyeti artırın.",
-        "About to Sleep": "🌙 **Uyumak Üzere:** Popüler ürün önerileri gönderin."
+        "Champions": "🏆 **VIP:** Yeni ürünleri ilk bunlar denemeli. Özel hissettirin.",
+        "Loyal Customers": "💎 **Sadık:** Sadakat programına dahil edin. Cross-sell yapın.",
+        "Cant Loose": "⚠️ **Kritik:** Agresif indirim veya telefon araması ile geri kazanın.",
+        "At Risk": "🚑 **Riskli:** Kişiselleştirilmiş e-posta serisi başlatın.",
+        "New Customers": "🌱 **Yeni:** Hoşgeldin kampanyası ile güven verin.",
+        "Hibernating": "💤 **Uykuda:** Düşük bütçeli hatırlatmalar yapın.",
+        "Need Attention": "🔔 **Dikkat:** Sınırlı süre teklifleri ile dürterek uyandırın.",
+        "Potential Loyalists": "📈 **Potansiyel:** Üyelik avantajlarını anlatın.",
+        "Promising": "🤞 **Umut:** Küçük jestler/hediyeler sunun.",
+        "About to Sleep": "🌙 **Uyuyor:** Popüler ürünleri önerin."
     }
-    return strategies.get(segment, "Standart prosedür uygulayın.")
+    return strategies.get(segment, "Standart prosedür.")
 
 # -----------------------------------------------------------------------------
-# 4. ARAYÜZ (DASHBOARD)
+# 3. ARAYÜZ (DASHBOARD)
 # -----------------------------------------------------------------------------
 
 # Session State
 if 'selected_customer_id' not in st.session_state:
     st.session_state.selected_customer_id = None
 
-st.title("📈 CRM & Müşteri Segmentasyon Paneli")
-st.markdown("Veriye dayalı **RFM Analizi** ile müşteri davranışlarını keşfedin.")
+# Veri Yükleme
+rfm_data = get_rfm_data()
 
-# Veri Yükleme Kontrolü
-with st.spinner('Veri seti yükleniyor ve işleniyor...'):
-    rfm_data = get_rfm_data()
-
-# HATA YÖNETİMİ
-if isinstance(rfm_data, str):
-    if rfm_data == "DOSYA_YOK":
-        st.error("⚠️ **Veri Dosyası Bulunamadı!**")
-        st.warning("Lütfen `online_retail_II.xlsx` dosyasını projenizin ana klasörüne (app.py yanına) yükleyin.")
-    else:
-        st.error(f"Bir hata oluştu: {rfm_data}")
-else:
-    # --- BAŞARILI İSE BURASI ÇALIŞIR ---
-    
-    # SIDEBAR
-    with st.sidebar:
-        st.header("🎛️ Kontrol Merkezi")
-        st.markdown(f"**Toplam Müşteri:** `{len(rfm_data):,}`")
-        st.markdown("---")
-        
-        st.subheader("🔎 Müşteri Ara")
-        input_id = st.number_input("ID Giriniz:", min_value=0, step=1)
-        if st.button("Sorgula", key="btn_search"):
-            st.session_state.selected_customer_id = input_id
-            
-        st.markdown("---")
-        st.subheader("🎲 Rastgele Seçim")
-        if st.button("Rastgele Getir", key="btn_random"):
-            random_id = random.choice(rfm_data.index.tolist())
-            st.session_state.selected_customer_id = random_id
-            
-        st.markdown("---")
-        st.caption("v2.0 | RFM Analytics")
-
-    # ANA EKRAN - GRAFİK
-    with st.expander("📊 Genel Segment Dağılımını Görüntüle", expanded=True):
-        seg_counts = rfm_data['Segment'].value_counts().reset_index()
-        seg_counts.columns = ['Segment', 'Kişi Sayısı']
-        
-        fig = px.bar(seg_counts, x='Segment', y='Kişi Sayısı', 
-                     color='Segment', text='Kişi Sayısı',
-                     title="Müşteri Segment Dağılımı")
-        fig.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig, use_container_width=True)
-
+# SIDEBAR MENÜSÜ
+with st.sidebar:
+    st.title("🧩 CRM Panel")
     st.markdown("---")
+    
+    menu = st.radio("Menü", ["Genel Bakış", "Müşteri Bul", "Veri Seti"], index=0)
+    
+    st.markdown("---")
+    st.caption("Veri Seti: Online Retail II")
+    
+    # Kısayol İstatistikleri
+    if not isinstance(rfm_data, str):
+        st.markdown("### ⚡ Hızlı Özet")
+        st.info(f"Top. Müşteri: **{len(rfm_data):,}**")
+        st.success(f"Ciro: **{rfm_data['Monetary'].sum():,.0f} ₺**")
 
-    # MÜŞTERİ KARTI
-    if st.session_state.selected_customer_id:
-        curr_id = st.session_state.selected_customer_id
+# MAIN CONTENT
+if isinstance(rfm_data, str):
+    st.error(f"Veri Yükleme Hatası: {rfm_data}")
+else:
+    
+    # ---------------- TAB 1: GENEL BAKIŞ (DASHBOARD) ----------------
+    if menu == "Genel Bakış":
+        st.header("📊 Şirket Genel Durumu")
         
-        if curr_id in rfm_data.index:
+        # Üst KPI Kartları
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Toplam Ciro", f"₺{rfm_data['Monetary'].sum():,.0f}", "+12%")
+        c2.metric("Aktif Müşteri", f"{len(rfm_data)}", "Segmentasyon Tamam")
+        c3.metric("Ort. Sepet", f"₺{rfm_data['Monetary'].mean():.1f}", "Düşük")
+        c4.metric("Şampiyonlar", f"{len(rfm_data[rfm_data['Segment']=='Champions'])}", "En Değerli")
+        
+        st.markdown("---")
+        
+        # Grafikler
+        col_g1, col_g2 = st.columns([2, 1])
+        
+        with col_g1:
+            st.subheader("Müşteri Segment Dağılımı")
+            seg_counts = rfm_data['Segment'].value_counts().reset_index()
+            seg_counts.columns = ['Segment', 'Count']
+            
+            fig = px.bar(seg_counts, x='Segment', y='Count', color='Segment', 
+                         text='Count', template="plotly_white",
+                         color_discrete_sequence=px.colors.qualitative.Prism)
+            fig.update_layout(showlegend=False, xaxis_title=None, height=400)
+            st.plotly_chart(fig, use_container_width=True)
+            
+        with col_g2:
+            st.subheader("Segment Oranları")
+            fig_pie = px.pie(seg_counts, values='Count', names='Segment', hole=0.4, template="plotly_white")
+            fig_pie.update_layout(showlegend=False, height=400, margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+        # Scatter Plot (RF Matrisi Görselleştirmesi)
+        st.subheader("Recency vs Frequency Analizi")
+        fig_scatter = px.scatter(rfm_data, x="Recency", y="Frequency", color="Segment", 
+                                 hover_data=["Monetary"], log_y=True, size="Monetary",
+                                 template="plotly_white", height=500)
+        st.plotly_chart(fig_scatter, use_container_width=True)
+
+    # ---------------- TAB 2: MÜŞTERİ BUL (DETAY) ----------------
+    elif menu == "Müşteri Bul":
+        st.header("🔎 Müşteri 360° Profil")
+        
+        # Arama Alanı (Yatay Düzen)
+        col_search, col_rand = st.columns([3, 1])
+        with col_search:
+            input_id = st.number_input("Müşteri ID Giriniz:", min_value=0, step=1, value=st.session_state.selected_customer_id if st.session_state.selected_customer_id else 0)
+        with col_rand:
+            st.write("") # Boşluk
+            st.write("") # Boşluk
+            if st.button("🎲 Rastgele Seç"):
+                st.session_state.selected_customer_id = random.choice(rfm_data.index.tolist())
+                st.rerun()
+
+        # Profil Gösterimi
+        curr_id = int(input_id) if input_id > 0 else st.session_state.selected_customer_id
+        
+        if curr_id and curr_id in rfm_data.index:
             cust = rfm_data.loc[curr_id]
             
-            # Başlık
-            st.markdown(f"### 👤 Müşteri Analizi: `{curr_id}`")
-            
-            # KPI Kartları
-            k1, k2, k3 = st.columns(3)
-            k1.metric("Recency (Yenilik)", f"{cust['Recency']} Gün", "Düşük İyidir", delta_color="inverse")
-            k2.metric("Frequency (Sıklık)", f"{cust['Frequency']} Kez", "Yüksek İyidir")
-            k3.metric("Monetary (Tutar)", f"{cust['Monetary']:.2f} ₺", "Yüksek İyidir")
-            
-            # Detay ve Aksiyon
-            col_seg, col_act = st.columns([1, 2])
-            
-            with col_seg:
-                st.info(f"**Atanan Segment:**\n\n#### {cust['Segment']}")
+            # Profil Kartı
+            with st.container():
+                # Segment Rengine Göre Banner
+                st.markdown(f"""
+                <div style="background-color:#e0f2fe; padding:20px; border-radius:10px; border-left: 6px solid #0284c7;">
+                    <h2 style="color:#0369a1; margin:0;">Müşteri: {curr_id}</h2>
+                    <h4 style="margin:0;">Segment: <b>{cust['Segment']}</b></h4>
+                </div>
+                <br>
+                """, unsafe_allow_html=True)
                 
-            with col_act:
-                st.success(f"**🤖 Yapay Zeka Önerisi (Aksiyon):**\n\n{create_strategy(cust['Segment'])}")
+                # Metrikler
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Son Alışveriş (Recency)", f"{cust['Recency']} Gün Önce", delta_color="inverse")
+                m2.metric("Alışveriş Sayısı (Frequency)", f"{cust['Frequency']}", "Adet")
+                m3.metric("Toplam Harcama (Monetary)", f"{cust['Monetary']:.2f} ₺", "TL")
                 
+                # Aksiyon ve Analiz
+                c_action, c_score = st.columns([2, 1])
+                
+                with c_action:
+                    st.subheader("🤖 Önerilen Aksiyon")
+                    st.info(create_strategy(cust['Segment']), icon="💡")
+                    
+                with c_score:
+                    st.subheader("RFM Skoru")
+                    st.metric("Skor Detayı", cust['RFM_SCORE'])
+                    st.progress(int(cust['recency_score']) * 20)
+                    st.caption("Recency Puanı")
+        
+        elif curr_id:
+            st.warning("Bu ID veritabanında bulunamadı.")
         else:
-            st.warning(f"❌ {curr_id} ID'li müşteri veritabanında bulunamadı.")
-    else:
-        st.info("👈 Analize başlamak için sol menüden bir Müşteri ID girin veya 'Rastgele Getir' butonuna basın.")
+            st.info("Lütfen bir ID girin veya rastgele bir müşteri seçin.")
+
+    # ---------------- TAB 3: VERİ SETİ ----------------
+    elif menu == "Veri Seti":
+        st.header("📂 Ham Veri ve Filtreleme")
+        
+        # Filtreleme Seçenekleri
+        selected_segments = st.multiselect("Segment Filtrele", rfm_data['Segment'].unique())
+        
+        if selected_segments:
+            filtered_df = rfm_data[rfm_data['Segment'].isin(selected_segments)]
+        else:
+            filtered_df = rfm_data
+            
+        st.dataframe(filtered_df, use_container_width=True, height=600)
