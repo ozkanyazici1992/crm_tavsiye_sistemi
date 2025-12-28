@@ -142,7 +142,7 @@ def get_rfm_data():
     rfm['Segment'] = rfm['RFM_SCORE'].replace(seg_map, regex=True)
     return rfm, status
 
-# --- KURUMSAL PAZARLAMA STRATEJİLERİ (Gözden Geçirilmiş) ---
+# --- KURUMSAL PAZARLAMA STRATEJİLERİ ---
 def get_strategy(segment):
     strategies = {
         "Champions": {
@@ -259,12 +259,13 @@ if input_id in rfm_data.index:
     cust = rfm_data.loc[input_id]
     strat = get_strategy(cust['Segment'])
 
-    # İKİ KOLONLU YAPI (Sol: Veriler, Sağ: Strateji)
+    # İKİ KOLONLU YAPI
     col_metrics, col_strategy = st.columns([1, 2], gap="medium")
 
-    # SOL PANEL: MÜŞTERİ SKORLARI
+    # --- SOL PANEL: MÜŞTERİ SKORLARI ---
     with col_metrics:
-        st.markdown(f"""
+        # HTML Kodunu değişkene atıyoruz (Güvenli Çizim İçin)
+        left_html = f"""
         <div class="glass-card">
             <h3 style="text-align:center; color:#e2e8f0; margin:0;">MÜŞTERİ PROFİLİ</h3>
             <h1 style="text-align:center; color:#38bdf8; font-size:2.5em; margin:10px 0;">#{input_id}</h1>
@@ -287,11 +288,13 @@ if input_id in rfm_data.index:
                 <div class="kpi-lbl">Toplam Hacim (Monetary)</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
+        st.markdown(left_html, unsafe_allow_html=True)
 
-    # SAĞ PANEL: AI STRATEJİSİ
+    # --- SAĞ PANEL: AI STRATEJİSİ ---
     with col_strategy:
-        st.markdown(f"""
+        # Sağ Panel HTML Kodu
+        right_html = f"""
         <div class="glass-card" style="min-height: 540px;">
             <h3>⚡ YAPAY ZEKA AKSİYON PLANI</h3>
             <h2 style="color:white; font-size:1.8rem; margin-top:10px;">{strat['action']}</h2>
@@ -316,7 +319,8 @@ if input_id in rfm_data.index:
                 Analiz Tarihi: {dt.datetime.now().strftime('%d.%m.%Y %H:%M')}
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
+        st.markdown(right_html, unsafe_allow_html=True)
 
 else:
     st.warning("⚠️ Belirtilen ID veritabanında bulunamadı. Lütfen geçerli bir ID girin.")
