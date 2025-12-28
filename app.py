@@ -256,7 +256,7 @@ def get_marketing_brief(segment):
 st.markdown("""
 <div class="header-container">
     <div>
-        <h1 class="main-title">Müşteri Zekası ve Sadakat Arama Motoru</h1>
+        <h1 class="main-title">Müşteri Zekası ve Sadakat Arama</h1>
         <p style="color:#94a3b8; margin:0; margin-top:5px;">AI Destekli Büyüme & Pazarlama Analitiği</p>
     </div>
     <div style="text-align:right;">
