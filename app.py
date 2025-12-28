@@ -5,108 +5,119 @@ import random
 import numpy as np
 
 # -----------------------------------------------------------------------------
-# 1. AYARLAR & PAZARLAMA ODAKLI TASARIM (EKSİKSİZ CSS)
+# 1. AYARLAR & MODERN CSS TASARIMI
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="Marketing Intelligence Hub", layout="wide", page_icon="🎯")
+st.set_page_config(page_title="Müşteri Zekası", layout="wide", page_icon="🧠")
 
 st.markdown("""
 <style>
-    /* Ana Tema */
+    /* Ana Tema - Koyu Mod */
     .stApp { background-color: #0b1120; color: #e2e8f0; }
     
-    /* Üst Menü Tasarımı */
+    /* Üst Menü Tasarımı (Header) */
     .header-container {
         background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
-        padding: 20px;
-        border-radius: 15px;
-        border-bottom: 2px solid #3b82f6;
-        margin-bottom: 20px;
+        padding: 25px;
+        border-radius: 16px;
+        border-bottom: 3px solid #3b82f6; /* Mavi Çizgi */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        margin-bottom: 25px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     .main-title {
-        font-size: 2.2rem;
+        font-size: 2.4rem;
         font-weight: 800;
-        background: -webkit-linear-gradient(45deg, #60a5fa, #c084fc);
+        /* Modern Gradient Yazı */
+        background: -webkit-linear-gradient(45deg, #38bdf8, #818cf8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin: 0;
+        letter-spacing: -1px;
     }
     
     /* Sol Panel: Skor Kartı */
     .score-card {
         background-color: rgba(30, 41, 59, 0.6);
         border: 1px solid rgba(148, 163, 184, 0.2);
-        border-radius: 12px;
-        padding: 20px;
+        border-radius: 16px;
+        padding: 25px;
         text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
     .rf-badge {
-        font-size: 3rem;
+        font-size: 3.5rem;
         font-weight: 900;
         color: #f8fafc;
-        letter-spacing: 5px;
-        text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        letter-spacing: 2px;
+        text-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+        margin: 10px 0;
     }
     .segment-label {
-        background-color: #3b82f6;
+        background-color: #2563eb;
         color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
+        padding: 6px 18px;
+        border-radius: 50px;
         font-weight: bold;
         text-transform: uppercase;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         display: inline-block;
-        margin-top: 10px;
+        letter-spacing: 1px;
     }
     
-    /* Sağ Panel: Marketing Brief */
+    /* Sağ Panel: Pazarlama Brief (Rapor) */
     .marketing-brief {
-        background: rgba(15, 23, 42, 0.8);
-        border-left: 4px solid #10b981;
-        padding: 25px;
-        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.9);
+        border-left: 5px solid #10b981; /* Yeşil Vurgu */
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
     
     .brief-section {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         border-bottom: 1px dashed #334155;
         padding-bottom: 15px;
     }
     
     .brief-title {
         color: #94a3b8;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        font-weight: bold;
-        margin-bottom: 5px;
+        letter-spacing: 1.2px;
+        font-weight: 700;
+        margin-bottom: 8px;
     }
     
     .brief-content {
         color: #e2e8f0;
-        font-size: 1.1rem;
-        line-height: 1.5;
+        font-size: 1.15rem;
+        line-height: 1.6;
+        font-weight: 400;
     }
     
     /* Buton Tasarımı */
     .stButton>button {
         width: 100%;
-        border-radius: 8px;
+        border-radius: 10px;
         background-color: #1e293b;
         color: #38bdf8;
         border: 1px solid #38bdf8;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        transition: 0.3s;
     }
     .stButton>button:hover {
         background-color: #38bdf8;
-        color: white;
+        color: #0f172a;
+        box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
     }
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. VERİ MOTORU (EKSİKSİZ VE HATA KORUMALI)
+# 2. VERİ MOTORU (CACHE + HATA KORUMASI)
 # -----------------------------------------------------------------------------
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_rfm_data():
@@ -125,7 +136,7 @@ def get_rfm_data():
         df["TotalPrice"] = df["Quantity"] * df["Price"]
         df["Customer ID"] = df["Customer ID"].astype(int)
         
-        # RFM Metrikleri
+        # RFM Hesaplama
         last_date = df["InvoiceDate"].max()
         today_date = last_date + dt.timedelta(days=2)
         
@@ -141,7 +152,7 @@ def get_rfm_data():
         rfm["recency_score"] = pd.qcut(rfm['Recency'], 5, labels=[5, 4, 3, 2, 1])
         rfm["frequency_score"] = pd.qcut(rfm['Frequency'].rank(method="first"), 5, labels=[1, 2, 3, 4, 5])
         
-        # Segmentasyon için birleşik skor (Örn: "55", "12")
+        # Birleşik Skor (RF)
         rfm["RF_SCORE_STR"] = (rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str))
         
         seg_map = {
@@ -155,7 +166,7 @@ def get_rfm_data():
         return rfm
 
     except Exception:
-        # Hata Durumunda Demo Verisi (Fail-Safe)
+        # Fail-Safe (Demo Veri - Hata Durumunda Çalışır)
         ids = np.random.randint(1000, 9999, 100)
         rfm = pd.DataFrame({
             'Recency': np.random.randint(1, 100, 100),
@@ -168,9 +179,9 @@ def get_rfm_data():
         rfm['Segment'] = "Champions"
         return rfm
 
-# --- PAZARLAMA BRIEF SÖZLÜĞÜ (TÜM SEGMENTLER EKLENDİ) ---
+# --- PAZARLAMA BRIEF SÖZLÜĞÜ (Segment Bazlı İçerik) ---
 def get_marketing_brief(segment):
-    # Yapı: (Başlık, Ton, Strateji, Aksiyon, Kanal)
+    # (Başlık, İletişim Tonu, Strateji, Taktik, Kanal)
     briefs = {
         "Champions": (
             "Marka Elçisi (Champions)",
@@ -246,27 +257,29 @@ def get_marketing_brief(segment):
     return briefs.get(segment, ("Bilinmeyen", "Standart", "Genel prosedür", "İletişim kurun", "E-posta"))
 
 # -----------------------------------------------------------------------------
-# 3. ARAYÜZ (DASHBOARD) - EKSİKSİZ YAPILANDIRMA
+# 3. ARAYÜZ (DASHBOARD)
 # -----------------------------------------------------------------------------
 
 # --- BAŞLIK ALANI ---
 st.markdown("""
 <div class="header-container">
     <div>
-        <h1 class="main-title">Müşteri Sadakat & Büyüme Platformu</h1>
-        <p style="color:#94a3b8; margin:0;">AI Destekli Pazarlama Zekası (RFM Analizi)</p>
+        <h1 class="main-title">Müşteri Zekası ve Sadakat Motoru</h1>
+        <p style="color:#94a3b8; margin:0; margin-top:5px;">AI Destekli Büyüme & Pazarlama Analitiği</p>
     </div>
-    <div style="text-align:right; color:#64748b; font-size:0.9rem;">
-        v3.0 Enterprise
+    <div style="text-align:right;">
+        <span style="background:#334155; color:#cbd5e1; padding:5px 10px; border-radius:5px; font-size:0.8rem;">
+            v4.0 Enterprise
+        </span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Veri Yükleme
-with st.spinner('Veriler analiz ediliyor...'):
+with st.spinner('Analiz motoru çalışıyor...'):
     rfm_data = get_rfm_data()
 
-# Rastgele Seçim Mantığı (Session State)
+# Seçim Mantığı (Session State)
 if 'selected_cust' not in st.session_state:
     st.session_state.selected_cust = int(rfm_data.index[0])
 
@@ -276,16 +289,16 @@ def pick_random():
 # --- KONTROL PANELİ ---
 c_search, c_refresh = st.columns([4, 1])
 with c_search:
-    st.markdown("##### 🔍 Hedef Müşteri Analizi")
+    st.markdown("##### 🔍 Müşteri Sorgula")
     c_in, c_btn = st.columns([3, 1])
     with c_in:
-        input_id = st.number_input("Müşteri ID:", value=st.session_state.selected_cust, label_visibility="collapsed")
+        input_id = st.number_input("ID Giriniz:", value=st.session_state.selected_cust, label_visibility="collapsed")
     with c_btn:
-        st.button("🎲 Rastgele Analiz Et", on_click=pick_random, use_container_width=True)
+        st.button("🎲 Rastgele Analiz", on_click=pick_random, use_container_width=True)
 with c_refresh:
     st.write("")
     st.write("")
-    if st.button("🔄 Veriyi Yenile"):
+    if st.button("🔄 Yenile"):
         st.cache_data.clear()
         st.rerun()
 
@@ -296,62 +309,66 @@ if input_id in rfm_data.index:
     cust = rfm_data.loc[input_id]
     segment_name, tone, strategy, tactic, channel = get_marketing_brief(cust['Segment'])
     
-    # Grid Yapısı
+    # 2 Kolonlu Yapı
     col_left, col_right = st.columns([1, 2], gap="large")
     
     # SOL: RFM SKOR KARTI
     with col_left:
-        st.markdown(f"""
+        # Skor kartı HTML'i
+        score_html = f"""
         <div class="score-card">
-            <p style="color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:5px;">RFM Skoru</p>
+            <p style="color:#94a3b8; font-size:0.85rem; text-transform:uppercase; margin-bottom:5px;">RFM Performans Skoru</p>
             <div class="rf-badge">{cust['RF_SCORE_STR']}</div>
             <div class="segment-label">{segment_name}</div>
             
-            <hr style="border-color:rgba(148,163,184,0.1); margin:20px 0;">
+            <hr style="border-color:rgba(148,163,184,0.1); margin:25px 0;">
             
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span style="color:#cbd5e1;">Son İşlem:</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                <span style="color:#cbd5e1;">Son İşlem (Recency):</span>
                 <span style="color:#38bdf8; font-weight:bold;">{cust['Recency']} Gün</span>
             </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span style="color:#cbd5e1;">İşlem Adedi:</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                <span style="color:#cbd5e1;">İşlem Sıklığı (Freq):</span>
                 <span style="color:#38bdf8; font-weight:bold;">{cust['Frequency']} Kez</span>
             </div>
             <div style="display:flex; justify-content:space-between;">
-                <span style="color:#cbd5e1;">Toplam Değer:</span>
+                <span style="color:#cbd5e1;">Toplam Hacim (Monetary):</span>
                 <span style="color:#38bdf8; font-weight:bold;">₺{cust['Monetary']:,.0f}</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
+        st.markdown(score_html, unsafe_allow_html=True)
 
-    # SAĞ: MARKETING BRIEF
+    # SAĞ: MARKETING BRIEF (HTML RENDER SORUNU GİDERİLDİ)
     with col_right:
-        st.markdown(f"""
+        # HTML kodunu değişkene atayarak güvenli render alma
+        brief_html = f"""
         <div class="marketing-brief">
-            <h3 style="color:white; margin-top:0; margin-bottom:20px;">📋 Pazarlama Aksiyon Planı</h3>
+            <h3 style="color:white; margin-top:0; margin-bottom:25px;">📋 Pazarlama Aksiyon Özeti</h3>
             
             <div class="brief-section">
-                <div class="brief-title">📢 İletişim Tonu (Tone of Voice)</div>
+                <div class="brief-title">📢 İletişim Tonu</div>
                 <div class="brief-content" style="color:#fcd34d;">{tone}</div>
             </div>
             
             <div class="brief-section">
-                <div class="brief-title">🧠 Temel Strateji</div>
+                <div class="brief-title">🧠 Ana Strateji</div>
                 <div class="brief-content">{strategy}</div>
             </div>
             
             <div class="brief-section">
-                <div class="brief-title">⚡ Önerilen Kampanya Kurgusu</div>
+                <div class="brief-title">⚡ Kampanya Kurgusu</div>
                 <div class="brief-content" style="font-weight:bold; color:#6ee7b7;">{tactic}</div>
             </div>
             
-            <div style="margin-top:10px;">
-                <span style="background:#1e293b; color:#94a3b8; padding:5px 10px; border-radius:5px; font-size:0.8rem;">
-                    📡 Öncelikli Kanal: <b style="color:white;">{channel}</b>
+            <div style="margin-top:15px;">
+                <span style="background:#1e293b; color:#94a3b8; padding:8px 15px; border-radius:8px; font-size:0.85rem; border:1px solid #334155;">
+                    📡 Önerilen Kanal: <b style="color:white;">{channel}</b>
                 </span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
+        st.markdown(brief_html, unsafe_allow_html=True)
 
 else:
-    st.warning("Bu ID veritabanında bulunamadı. Lütfen geçerli bir ID girin.")
+    st.warning("⚠️ Bu ID veritabanında bulunamadı. Lütfen geçerli bir ID girin.")
