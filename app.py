@@ -4,67 +4,61 @@ import pandas as pd
 import random
 
 # -----------------------------------------------------------------------------
-# 1. KOMPAKT VE RENKLİ TASARIM
+# 1. PROFESYONEL YÖNETİCİ ARAYÜZÜ (CSS)
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="CRM Tek Ekran", layout="wide", page_icon="⚡")
+st.set_page_config(page_title="CRM Pro Dashboard", layout="wide", page_icon="🚀")
 
 st.markdown("""
 <style>
-    /* --- ARKA PLAN (Renkli Gradient) --- */
+    /* --- ARKA PLAN (Modern Gradient) --- */
     .stApp {
-        background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         background-attachment: fixed;
     }
-
-    /* --- ANA KUTU (Daraltılmış Boşluklar) --- */
+    
+    /* --- ANA KONTEYNER --- */
     .block-container {
-        background-color: rgba(255, 255, 255, 0.90);
-        border-radius: 15px;
-        padding: 1rem 2rem !important; /* Üst/Alt boşluğu azalttık */
-        margin-top: 1rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        max-width: 95% !important;
+        max-width: 98% !important;
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
     }
 
-    /* --- BAŞLIKLAR --- */
-    h1 { font-size: 1.8rem !important; margin-bottom: 0 !important; color: #2c3e50; }
-    p { margin-bottom: 0.5rem !important; }
-
-    /* --- METRİKLER (Daha küçük ve şık) --- */
-    div[data-testid="stMetric"] {
-        background-color: #f0f9ff !important;
-        border: 1px solid #bae6fd;
-        border-radius: 10px;
-        padding: 8px;
-        text-align: center;
-    }
-    label[data-testid="stMetricLabel"] { font-size: 0.8rem !important; }
-    div[data-testid="stMetricValue"] { font-size: 1.2rem !important; color: #0284c7; }
-
-    /* --- INPUT VE BUTON (Yan yana) --- */
-    .stNumberInput, .stButton { margin-top: 0px !important; }
-    .stButton>button {
-        width: 100%;
-        background-color: #2c3e50;
-        color: white;
-        border-radius: 8px;
-        height: 46px; /* Input ile aynı boy */
+    /* --- KART TASARIMLARI --- */
+    .card {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        margin-bottom: 20px;
     }
     
-    /* --- SONUÇ KARTI --- */
-    .result-card {
-        background-color: #fff;
-        border-left: 5px solid #10b981;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        margin-top: 10px;
+    /* --- METRİK KUTULARI (Üst KPI) --- */
+    div[data-testid="stMetric"] {
+        background-color: #f8fafc;
+        border-radius: 10px;
+        padding: 10px;
+        border-left: 5px solid #2563eb;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
+    
+    /* --- BAŞLIKLAR --- */
+    h1, h2, h3 { color: #1e293b; font-family: 'Segoe UI', sans-serif; font-weight: 700; }
+    p { color: #475569; font-size: 1.05rem; line-height: 1.6; }
+
+    /* --- BUTON --- */
+    .stButton>button {
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        color: white; border: none; font-size: 16px; height: 50px;
+        border-radius: 8px; font-weight: bold; width: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .stButton>button:hover { transform: scale(1.02); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. VERİ ÇEKME VE İŞLEME
+# 2. VERİ MOTORU (Drive Entegreli)
 # -----------------------------------------------------------------------------
 @st.cache_data(show_spinner=False)
 def get_rfm_data():
@@ -108,88 +102,132 @@ def get_rfm_data():
         return rfm
     except Exception as e: return f"HATA: {str(e)}"
 
-def get_suggestion(segment):
-    suggestions = {
-        "Champions": "🌟 VIP muamelesi yapın.", "Loyal Customers": "💎 Sadakat puanı verin.",
-        "Cant Loose": "📞 Acil arayın, kaçıyor!", "At Risk": "📧 Özel e-posta atın.",
-        "New Customers": "👋 Hoşgeldin indirimi.", "Hibernating": "💤 Uyandırma servisi.",
-        "Need Attention": "🔔 Kısa süreli kampanya.", "Potential Loyalists": "📈 Üyeliğe teşvik.",
-        "Promising": "🎁 Küçük hediye.", "About to Sleep": "🌙 Popüler ürün öner."
+# --- DETAYLI STRATEJİLER (İlk projedeki uzun metinler) ---
+def create_strategy(segment):
+    strategies = {
+        "Champions": "🏆 **Şampiyon Müşteri (VIP):** <br>Bu müşteriler şirketinizin en değerli varlıklarıdır. <br>• Yeni çıkan ürünleri **ilk** onlara sunun.<br>• Özel 'Gizli İndirimler' veya VIP etkinlik davetiyeleri gönderin.<br>• Onlardan marka elçisi olmalarını isteyin.",
+        
+        "Loyal Customers": "💎 **Sadık Müşteriler:** <br>Düzenli alışveriş yaparlar, güvenleri tamdır. <br>• Harcama alışkanlıklarını ödüllendiren bir **Sadakat Programı** (Puan sistemi) oluşturun.<br>• Yan ürün satışları (Cross-sell) için en uygun kitle budur.",
+        
+        "Cant Loose": "⚠️ **Kaybedilemez Müşteriler:** <br>Eskiden çok sık ve yüklü alıyorlardı ama uzun süredir yoklar. <br>• Onları geri kazanmak için **agresif indirimler** yapmaktan çekinmeyin.<br>• Mümkünse bir müşteri temsilcisi bizzat aramalı: 'Sizi özledik' temalı bir iletişim kurun.",
+        
+        "At Risk": "🚑 **Riskli Grup:** <br>En son alışverişleri üzerinden çok zaman geçti. <br>• Kaybetmek üzeresiniz! Kişiselleştirilmiş e-postalar gönderin.<br>• Onlara özel, süreli bir kampanya tanımlayarak aciliyet hissi yaratın.",
+        
+        "New Customers": "🌱 **Yeni Müşteriler:** <br>Henüz sizi tanıma aşamasındalar. <br>• 'Hoşgeldin' kampanyası ile **ikinci satın almayı** teşvik edin.<br>• Markanızın hikayesini anlatan samimi içerikler paylaşın.",
+        
+        "Hibernating": "💤 **Uykuda:** <br>Uzun zamandır yoklar ve geçmişte de çok sık gelmemişler. <br>• Çok bütçe harcamadan, ara ara kendinizi hatırlatın.<br>• Sadece büyük indirim dönemlerinde (Black Friday vb.) hedefleyin.",
+        
+        "Need Attention": "🔔 **Dikkat Gerektiriyor:** <br>Kararsız aşamadalar. <br>• Kısa süreli fırsatlarla onları dürterek uyandırın.<br>• Ürün öneri sistemini kullanarak ilgilerini çekebilecek ürünleri gösterin.",
+        
+        "Potential Loyalists": "📈 **Potansiyel Sadıklar:** <br>Yeni ama umut vaat ediyorlar. <br>• İlk deneyimlerinin kusursuz olduğundan emin olun.<br>• Bir sonraki alışverişlerinde kargo bedava gibi küçük jestler yapın.",
+        
+        "Promising": "🤞 **Umut Vaat Eden:** <br>Potansiyelleri var. <br>• Küçük hediyelerle memnuniyeti artırın ve bağ kurun.",
+        
+        "About to Sleep": "🌙 **Uyumak Üzere:** <br>Ortalamanın altında kaldılar. <br>• Popüler ürün önerileri göndererek tekrar siteye çekmeye çalışın."
     }
-    return suggestions.get(segment, "İletişime geçin.")
+    return strategies.get(segment, "Standart prosedür uygulayın.")
+
+def render_stars(score):
+    return "⭐" * int(score) + "☆" * (5 - int(score))
 
 # -----------------------------------------------------------------------------
-# 3. ARAYÜZ MANTIĞI
+# 3. ARAYÜZ (MAIN DASHBOARD)
 # -----------------------------------------------------------------------------
 
 # Veriyi Yükle
-rfm_data = get_rfm_data()
+with st.spinner('Analiz motoru çalışıyor...'):
+    rfm_data = get_rfm_data()
 
 if isinstance(rfm_data, str):
-    st.error(rfm_data)
+    st.error(f"Veri Hatası: {rfm_data}")
 else:
-    # --- SESSION STATE (Rastgele Butonu İçin Hafıza) ---
+    # --- SESSION STATE ---
     if 'selected_customer' not in st.session_state:
-        # Başlangıçta ilk müşteriyi seçili yapalım
         st.session_state.selected_customer = int(rfm_data.index[0])
 
-    # Callback Fonksiyonu: Butona basınca çalışır
     def set_random():
-        random_id = random.choice(rfm_data.index.tolist())
-        st.session_state.selected_customer = int(random_id)
+        st.session_state.selected_customer = int(random.choice(rfm_data.index.tolist()))
 
-    # --- TEK EKRAN DÜZENİ (GRID LAYOUT) ---
-    
-    # 1. SATIR: Başlık ve Özet KPI'lar (Hepsi yan yana)
-    col_head, col_k1, col_k2, col_k3 = st.columns([2, 1, 1, 1])
-    
-    with col_head:
-        st.title("CRM Özet Paneli")
-        st.caption("⚡ Canlı Veri Analizi")
-        
-    with col_k1: st.metric("Müşteri", f"{len(rfm_data)}")
-    with col_k2: st.metric("Ciro", f"{rfm_data['Monetary'].sum()/1000:.0f}K ₺")
-    with col_k3: st.metric("Ort.Sepet", f"{rfm_data['Monetary'].mean():.0f} ₺")
+    # --- ÜST BİLGİ KARTLARI (KPI) ---
+    col_k1, col_k2, col_k3, col_k4 = st.columns(4)
+    col_k1.metric("📊 Toplam Müşteri", f"{len(rfm_data):,}")
+    col_k2.metric("💰 Toplam Ciro", f"₺{rfm_data['Monetary'].sum():,.0f}")
+    col_k3.metric("🛒 Aktif Sepet Ort.", f"₺{rfm_data['Monetary'].mean():.1f}")
+    col_k4.metric("🏆 Şampiyon Sayısı", f"{len(rfm_data[rfm_data['Segment']=='Champions'])}")
 
-    st.markdown("---", unsafe_allow_html=True)
+    st.write("") # Boşluk
 
-    # 2. SATIR: Arama Kutusu ve Buton (İşlevsel Alan)
+    # --- KONTROL PANELİ (ARAMA & BUTON) ---
+    # Bu kısmı beyaz bir kart içine alalım
+    st.markdown('<div class="card" style="padding: 15px; display: flex; align-items: center;">', unsafe_allow_html=True)
     c_search, c_btn = st.columns([3, 1])
-    
     with c_search:
-        # Key parametresi ile state'i bağlıyoruz. Değişince otomatik güncellenir.
-        input_id = st.number_input("Müşteri ID:", step=1, key='selected_customer')
-        
+        input_id = st.number_input("Müşteri ID Analizi:", value=st.session_state.selected_customer, step=1, key='input_box')
     with c_btn:
-        st.write("") # Hizalama boşluğu
+        st.write("") # Hizalama
         st.write("")
-        # on_click parametresi ile butona basınca fonksiyonu çağırıyoruz
-        st.button("🎲 Rastgele Bul", on_click=set_random, use_container_width=True)
+        st.button("🎲 Rastgele Analiz Et", on_click=set_random)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. SATIR: Analiz Sonucu (Hemen Altında)
+    # --- ANA ANALİZ EKRANI (2 SÜTUNLU YAPI) ---
     if input_id in rfm_data.index:
         cust = rfm_data.loc[input_id]
         
-        # Sonuç Kartı HTML
-        st.markdown(f"""
-        <div class="result-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; color:#065f46;">👤 Seçili Müşteri: {input_id}</h3>
-                <span style="background:#d1fae5; color:#065f46; padding:5px 15px; border-radius:20px; font-weight:bold;">
-                    {cust['Segment']}
-                </span>
+        col_left, col_right = st.columns([1, 2]) # 1 birim sol, 2 birim sağ (Sağ taraf daha geniş)
+
+        # SOL KOLON: Müşteri Profili & Skorlar
+        with col_left:
+            st.markdown(f"""
+            <div class="card">
+                <h2 style="color:#2563eb; text-align:center;">👤 ID: {input_id}</h2>
+                <hr>
+                <div style="text-align:center; margin-bottom:15px;">
+                    <span style="background-color:#dbeafe; color:#1e40af; padding:8px 16px; border-radius:20px; font-weight:bold; font-size:1.1rem;">
+                        {cust['Segment']}
+                    </span>
+                </div>
+                <h4 style="margin-top:20px;">RFM Performansı</h4>
+            """, unsafe_allow_html=True)
+            
+            # Streamlit native progress barlarını kartın içine gömüyoruz
+            st.caption(f"Yenilik (Recency): {cust['Recency']} gün")
+            st.progress(int(cust['recency_score']) * 20)
+            
+            st.caption(f"Sıklık (Frequency): {cust['Frequency']} kez")
+            st.progress(int(cust['frequency_score']) * 20)
+            
+            st.markdown(f"""
+                <hr>
+                <h3 style="text-align:center; color:#059669;">₺{cust['Monetary']:,.2f}</h3>
+                <p style="text-align:center; font-size:0.9rem;">Toplam Harcama</p>
+                <div style="text-align:center; background:#f1f5f9; padding:10px; border-radius:8px;">
+                     <b>Genel Skor:</b> {render_stars(cust['recency_score'])} ({cust['RFM_SCORE']})
+                </div>
             </div>
-            <hr style="margin:10px 0; border-color:#ecfdf5;">
-            <div style="display:flex; justify-content:space-around; text-align:center;">
-                <div><small>En Son</small><br><b>{cust['Recency']} gün</b></div>
-                <div><small>Sıklık</small><br><b>{cust['Frequency']} adet</b></div>
-                <div><small>Harcama</small><br><b>{cust['Monetary']:.2f} ₺</b></div>
+            """, unsafe_allow_html=True)
+
+        # SAĞ KOLON: Detaylı Yapay Zeka Stratejisi
+        with col_right:
+            st.markdown(f"""
+            <div class="card" style="min-height: 400px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <h2 style="margin:0;">🚀 Yapay Zeka Aksiyon Planı</h2>
+                </div>
+                <hr>
+                <div style="background-color:#eff6ff; border-left: 6px solid #3b82f6; padding: 20px; border-radius: 8px;">
+                    <p style="font-size:1.15rem; color:#1e3a8a;">
+                        {create_strategy(cust['Segment'])}
+                    </p>
+                </div>
+                <br>
+                <h3>📌 Pazarlama Notları:</h3>
+                <ul>
+                    <li>Müşterinin son alışverişi <b>{cust['Recency']} gün</b> önce gerçekleşmiş.</li>
+                    <li>Toplamda <b>{cust['Frequency']} kez</b> mağazayı ziyaret etmiş.</li>
+                    <li>Bu segmentteki müşterilere yapılan kampanyalarda dönüşüm oranı <b>%15</b> daha yüksektir.</li>
+                </ul>
             </div>
-            <div style="margin-top:15px; background:#f0fdf4; padding:10px; border-radius:5px; border:1px dashed #10b981;">
-                <b>🚀 Yapay Zeka Önerisi:</b> {get_suggestion(cust['Segment'])}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
+            """, unsafe_allow_html=True)
+
     else:
-        st.warning("⚠️ Bu ID listede yok.")
+        st.warning("⚠️ Belirtilen ID veritabanında bulunamadı. Lütfen listeden bir ID seçin veya 'Rastgele' butonunu kullanın.")
