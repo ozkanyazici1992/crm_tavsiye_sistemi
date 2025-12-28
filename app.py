@@ -5,7 +5,7 @@ import random
 import numpy as np
 
 # -----------------------------------------------------------------------------
-# 1. AYARLAR & MODERN CSS TASARIMI
+# 1. AYARLAR & CSS
 # -----------------------------------------------------------------------------
 st.set_page_config(page_title="Müşteri Zekası", layout="wide", page_icon="🧠")
 
@@ -14,12 +14,12 @@ st.markdown("""
     /* Ana Tema - Koyu Mod */
     .stApp { background-color: #0b1120; color: #e2e8f0; }
     
-    /* Üst Menü Tasarımı (Header) */
+    /* Üst Menü */
     .header-container {
         background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
         padding: 25px;
         border-radius: 16px;
-        border-bottom: 3px solid #3b82f6; /* Mavi Çizgi */
+        border-bottom: 3px solid #3b82f6;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         margin-bottom: 25px;
         display: flex;
@@ -29,7 +29,6 @@ st.markdown("""
     .main-title {
         font-size: 2.4rem;
         font-weight: 800;
-        /* Modern Gradient Yazı */
         background: -webkit-linear-gradient(45deg, #38bdf8, #818cf8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -66,10 +65,10 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Sağ Panel: Pazarlama Brief (Rapor) */
+    /* Sağ Panel: Pazarlama Brief */
     .marketing-brief {
         background: rgba(15, 23, 42, 0.9);
-        border-left: 5px solid #10b981; /* Yeşil Vurgu */
+        border-left: 5px solid #10b981;
         padding: 30px;
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -97,7 +96,7 @@ st.markdown("""
         font-weight: 400;
     }
     
-    /* Buton Tasarımı */
+    /* Buton */
     .stButton>button {
         width: 100%;
         border-radius: 10px;
@@ -117,7 +116,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. VERİ MOTORU (CACHE + HATA KORUMASI)
+# 2. VERİ MOTORU
 # -----------------------------------------------------------------------------
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_rfm_data():
@@ -125,18 +124,15 @@ def get_rfm_data():
     sheet_url = f'https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx'
     
     try:
-        # Veri Çekme
         df_ = pd.read_excel(sheet_url, sheet_name="Year 2009-2010", engine='openpyxl')
         df = df_.copy()
         
-        # Temizlik
         df.dropna(subset=["Customer ID"], inplace=True)
         df = df[~df["Invoice"].str.contains("C", na=False)]
         df = df[(df['Quantity'] > 0) & (df['Price'] > 0)]
         df["TotalPrice"] = df["Quantity"] * df["Price"]
         df["Customer ID"] = df["Customer ID"].astype(int)
         
-        # RFM Hesaplama
         last_date = df["InvoiceDate"].max()
         today_date = last_date + dt.timedelta(days=2)
         
@@ -148,11 +144,9 @@ def get_rfm_data():
         rfm.columns = ['Recency', 'Frequency', 'Monetary']
         rfm = rfm[rfm["Monetary"] > 0]
         
-        # Skorlama (1-5)
         rfm["recency_score"] = pd.qcut(rfm['Recency'], 5, labels=[5, 4, 3, 2, 1])
         rfm["frequency_score"] = pd.qcut(rfm['Frequency'].rank(method="first"), 5, labels=[1, 2, 3, 4, 5])
         
-        # Birleşik Skor (RF)
         rfm["RF_SCORE_STR"] = (rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str))
         
         seg_map = {
@@ -166,7 +160,6 @@ def get_rfm_data():
         return rfm
 
     except Exception:
-        # Fail-Safe (Demo Veri - Hata Durumunda Çalışır)
         ids = np.random.randint(1000, 9999, 100)
         rfm = pd.DataFrame({
             'Recency': np.random.randint(1, 100, 100),
@@ -179,9 +172,8 @@ def get_rfm_data():
         rfm['Segment'] = "Champions"
         return rfm
 
-# --- PAZARLAMA BRIEF SÖZLÜĞÜ (Segment Bazlı İçerik) ---
+# --- PAZARLAMA BRIEF SÖZLÜĞÜ ---
 def get_marketing_brief(segment):
-    # (Başlık, İletişim Tonu, Strateji, Taktik, Kanal)
     briefs = {
         "Champions": (
             "Marka Elçisi (Champions)",
@@ -260,7 +252,7 @@ def get_marketing_brief(segment):
 # 3. ARAYÜZ (DASHBOARD)
 # -----------------------------------------------------------------------------
 
-# --- BAŞLIK ALANI ---
+# HEADER
 st.markdown("""
 <div class="header-container">
     <div>
@@ -279,14 +271,14 @@ st.markdown("""
 with st.spinner('Analiz motoru çalışıyor...'):
     rfm_data = get_rfm_data()
 
-# Seçim Mantığı (Session State)
+# Seçim Mantığı
 if 'selected_cust' not in st.session_state:
     st.session_state.selected_cust = int(rfm_data.index[0])
 
 def pick_random():
     st.session_state.selected_cust = int(random.choice(rfm_data.index.tolist()))
 
-# --- KONTROL PANELİ ---
+# KONTROL PANELİ
 c_search, c_refresh = st.columns([4, 1])
 with c_search:
     st.markdown("##### 🔍 Müşteri Sorgula")
@@ -304,17 +296,15 @@ with c_refresh:
 
 st.markdown("---")
 
-# --- ANALİZ RAPORU ---
+# ANALİZ RAPORU
 if input_id in rfm_data.index:
     cust = rfm_data.loc[input_id]
     segment_name, tone, strategy, tactic, channel = get_marketing_brief(cust['Segment'])
     
-    # 2 Kolonlu Yapı
     col_left, col_right = st.columns([1, 2], gap="large")
     
     # SOL: RFM SKOR KARTI
     with col_left:
-        # Skor kartı HTML'i
         score_html = f"""
         <div class="score-card">
             <p style="color:#94a3b8; font-size:0.85rem; text-transform:uppercase; margin-bottom:5px;">RFM Performans Skoru</p>
@@ -339,9 +329,8 @@ if input_id in rfm_data.index:
         """
         st.markdown(score_html, unsafe_allow_html=True)
 
-    # SAĞ: MARKETING BRIEF (HTML RENDER SORUNU GİDERİLDİ)
+    # SAĞ: MARKETING BRIEF (DÜZELTİLMİŞ)
     with col_right:
-        # HTML kodunu değişkene atayarak güvenli render alma
         brief_html = f"""
         <div class="marketing-brief">
             <h3 style="color:white; margin-top:0; margin-bottom:25px;">📋 Pazarlama Aksiyon Özeti</h3>
