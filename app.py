@@ -245,7 +245,6 @@ if cust_id in rfm_data.index:
     
     # --- SOL: PROFİL KARTI ---
     with col_left:
-        # BURADA HTML KODLARINI SOLA YASLADIK (Fix)
         st.markdown(f"""
 <div class="glass-card">
     <div style="text-align:center;">
@@ -275,7 +274,6 @@ if cust_id in rfm_data.index:
 
     # --- SAĞ: STRATEJİ & AKSİYON (HTML) ---
     with col_right:
-        # BURADA DA HTML KODLARINI SOLA YASLADIK (Fix)
         st.markdown(f"""
 <div class="glass-card">
     <div class="strategy-grid">
@@ -303,48 +301,6 @@ if cust_id in rfm_data.index:
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-    # --- ALT BÖLÜM: VERİ SETİ ÖZETİ (TABLO) ---
-    st.markdown("---")
-    st.markdown("<h4 style='color:#94a3b8; margin-bottom:15px;'>📊 Genel Veri Seti Özeti (Segment Analizi)</h4>", unsafe_allow_html=True)
-    
-    # Özeti Hesapla
-    summary_df = rfm_data.groupby("Segment").agg({
-        "Customer ID": "count",
-        "Recency": "mean",
-        "Frequency": "mean",
-        "Monetary": "mean"
-    }).reset_index()
-    
-    summary_df.columns = ["Segment", "Kişi Sayısı", "Ort. Recency (Gün)", "Ort. Frequency (Adet)", "Ort. Monetary (₺)"]
-    summary_df = summary_df.sort_values(by="Ort. Monetary (₺)", ascending=False).set_index("Segment")
-
-    # Tabloyu Göster (Column Config ile Süsleme)
-    st.dataframe(
-        summary_df,
-        use_container_width=True,
-        column_config={
-            "Kişi Sayısı": st.column_config.ProgressColumn(
-                "Kişi Sayısı", 
-                format="%d", 
-                min_value=0, 
-                max_value=int(summary_df["Kişi Sayısı"].max()),
-                help="Bu segmentteki toplam müşteri sayısı"
-            ),
-            "Ort. Monetary (₺)": st.column_config.NumberColumn(
-                "Ort. Harcama",
-                format="₺%.2f"
-            ),
-            "Ort. Recency (Gün)": st.column_config.NumberColumn(
-                "Ort. Son İşlem",
-                format="%.0f Gün"
-            ),
-            "Ort. Frequency (Adet)": st.column_config.NumberColumn(
-                "Ort. Sıklık",
-                format="%.1f Kez"
-            )
-        }
-    )
 
 else:
     st.info("⚠️ Girilen ID veritabanında bulunamadı. Lütfen listeden bir ID seçiniz.")
