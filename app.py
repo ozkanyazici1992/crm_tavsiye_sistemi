@@ -184,18 +184,79 @@ def get_rfm_data_v3():
         rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
         return rfm, True, str(e)
 
+# --- PAZARLAMA METİNLERİ (GÜNCELLENDİ) ---
 def get_marketing_brief(segment):
     briefs = {
-        "Champions": ("Marka Elçisi", "⭐ Hayranlık Uyandırıcı", "İndirim yok, 'Ayrıcalık' var.", "CEO'dan Mektup + Erken Erişim.", "VIP WhatsApp"),
-        "Loyal Customers": ("Sadık Müşteri", "🤝 Samimi", "Sepet ortalamasını (AOV) artır.", "Yan ürünlerde %15 Ekstra İndirim.", "Mobil Uygulama"),
-        "Cant Loose": ("Kritik Kayıp", "🆘 Acil", "Yıldız müşteriyi kaybetme.", "Bizzat ara + Geri Dönüş Hediyesi.", "Telefon"),
-        "At Risk": ("Risk Grubu", "💌 Duygusal", "Bağı yeniden kur.", "Özledik Kuponu (Alt limitsiz).", "SMS / Mail"),
-        "New Customers": ("Yeni Müşteri", "🌱 Öğretici", "Alışkanlık yarat.", "Hoşgeldin Anketi + Puan.", "Mail Serisi"),
-        "Potential Loyalists": ("Potansiyel", "📈 Teşvik", "Topluluğa kat.", "Sadakat Kulübü + Kargo Bedava.", "Site İçi Pop-up"),
-        "Hibernating": ("Uykuda", "💤 Sakin", "Rahatsız etme.", "Sadece Büyük Sezon İndirimi.", "Mail (Az)"),
-        "Need Attention": ("İlgi Bekliyor", "🔔 Uyarıcı", "Zaman baskısı yarat (FOMO).", "İndirim 24 saatte bitiyor!", "Push Bildirim"),
-        "Promising": ("Umut Vaat Eden", "🎁 Şaşırtıcı", "Akılda kal.", "Kutu içine sürpriz numune.", "Kutu Deneyimi"),
-        "About to Sleep": ("Soğuma", "🔥 Trend", "Sosyal kanıt kullan.", "En Çok Satanlar Listesi.", "Instagram")
+        "Champions": (
+            "Marka Elçisi", 
+            "⭐ Hayranlık Uyandırıcı", 
+            "İndirim yok, 'Ayrıcalık' var.", 
+            "Sizi en değerli müşterilerimiz arasında görmekten mutluluk duyuyoruz. CEO'muzun özel teşekkür notuyla birlikte, henüz satışa çıkmamış yeni koleksiyonumuza 24 saat önceden erişim hakkı tanımladık.", 
+            "VIP WhatsApp"
+        ),
+        "Loyal Customers": (
+            "Sadık Müşteri", 
+            "🤝 Samimi", 
+            "Sepet ortalamasını (AOV) artır.", 
+            "Sadakatiniz bizim için çok değerli. Son aldığınız ürünlerle mükemmel uyum sağlayacak tamamlayıcı ürünlerde geçerli %15 ekstra indirim fırsatını kaçırmayın.", 
+            "Mobil Uygulama"
+        ),
+        "Cant Loose": (
+            "Kritik Kayıp", 
+            "🆘 Acil", 
+            "Yıldız müşteriyi kaybetme.", 
+            "Sizin gibi değerli bir müşterimizin sessizliği bizi endişelendiriyor. Herhangi bir sorununuz varsa çözmek ve size özel tanımladığımız 'Geri Dönüş Hediyesi'ni iletmek için müşteri temsilcimiz sizi arayacak.", 
+            "Telefon"
+        ),
+        "At Risk": (
+            "Risk Grubu", 
+            "💌 Duygusal", 
+            "Bağı yeniden kur.", 
+            "Sizi ve alışveriş tercihlerinizi gerçekten özledik. Aramıza dönmeniz şerefine, alt limit şartı olmadan kullanabileceğiniz size özel bir indirim kuponu hesabınıza tanımlandı.", 
+            "SMS / Mail"
+        ),
+        "New Customers": (
+            "Yeni Müşteri", 
+            "🌱 Öğretici", 
+            "Alışkanlık yarat.", 
+            "Aramıza hoş geldiniz! Deneyiminiz bizim için çok önemli, kısa anketimizi doldurarak hem görüşlerinizi paylaşın hem de bir sonraki alışverişinizde geçerli Hoşgeldin Puanlarınızı hemen kazanın.", 
+            "Mail Serisi"
+        ),
+        "Potential Loyalists": (
+            "Potansiyel", 
+            "📈 Teşvik", 
+            "Topluluğa kat.", 
+            "Alışveriş tutkunuzu bir üst seviyeye taşımanın tam zamanı. Sadakat Kulübümüze (Loyalty Club) hemen katılın, hem özel fırsatlardan yararlanın hem de tüm siparişlerinizde kargo bedava ayrıcalığını yaşayın.", 
+            "Site İçi Pop-up"
+        ),
+        "Hibernating": (
+            "Uykuda", 
+            "💤 Sakin", 
+            "Rahatsız etme.", 
+            "Uzun zamandır görüşemedik ama harika bir haberimiz var! Sadece sezonun en büyük indirim günlerinde geçerli olan, eski dostlarımıza özel 'Efsane Dönüş' fırsatlarını sizin için derledik.", 
+            "Mail (Az)"
+        ),
+        "Need Attention": (
+            "İlgi Bekliyor", 
+            "🔔 Uyarıcı", 
+            "Zaman baskısı yarat (FOMO).", 
+            "Sepetinizdeki ürünler tükenmek üzere, acele edin! Sadece önümüzdeki 24 saat boyunca geçerli olan bu fırsatı kaçırmamak için alışverişinizi şimdi tamamlayın.", 
+            "Push Bildirim"
+        ),
+        "Promising": (
+            "Umut Vaat Eden", 
+            "🎁 Şaşırtıcı", 
+            "Akılda kal.", 
+            "Sizi tekrar görmek harika! Siparişinizi hazırlarken içine küçük bir sürpriz ekledik. Deneyiminizi zenginleştirecek ücretsiz numune ürününüzü paketinizi açtığınızda keşfedebilirsiniz.", 
+            "Kutu Deneyimi"
+        ),
+        "About to Sleep": (
+            "Soğuma", 
+            "🔥 Trend", 
+            "Sosyal kanıt kullan.", 
+            "Trendleri kaçırmanızı istemeyiz, bu hafta herkesin konuştuğu ürünleri sizin için listeledik. En çok tercih edilenler listemize göz atarak popüler ürünleri keşfetmeye hemen başlayın.", 
+            "Instagram"
+        )
     }
     return briefs.get(segment, ("Bilinmeyen", "Standart", "Genel", "İletişim kurun", "E-posta"))
 
@@ -237,7 +298,7 @@ if cust_id in rfm_data.index:
     
     col_left, col_right = st.columns([1, 2.5], gap="medium")
     
-    # --- DÜZELTME: HTML KODLARI SOLA YASLANDI ---
+    # HTML KODLARINI SOLA YASLADIK (Fix)
     with col_left:
         st.markdown(f"""
 <div class="glass-card">
@@ -280,7 +341,7 @@ if cust_id in rfm_data.index:
 <div style="display:flex; gap:15px; align-items:stretch;">
 <div class="info-box" style="border-color:#10b981; flex-grow:1;">
 <div class="box-title" style="color:#34d399;">⚡ ÖNERİLEN AKSİYON</div>
-<div class="box-content" style="font-weight:700; color:#fff;">{tactic}</div>
+<div class="box-content" style="font-weight:600; color:#fff;">{tactic}</div>
 </div>
 <div style="background:rgba(15,23,42,0.5); border:1px solid #334155; border-radius:10px; padding:15px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:110px;">
 <div style="font-size:1.8rem;">📡</div>
