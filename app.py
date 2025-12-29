@@ -343,28 +343,35 @@ if input_id in rfm_data.index:
 
     # SAĞ: MARKETING BRIEF
     with col_right:
+        import html
+        # HTML içinde güvenli kullanım için escape
+        tone_safe = html.escape(tone)
+        strategy_safe = html.escape(strategy)
+        tactic_safe = html.escape(tactic)
+        channel_safe = html.escape(channel)
+        
         brief_html = f"""
         <div class="marketing-brief">
             <h3 style="color:white; margin-top:0; margin-bottom:25px;">📋 Pazarlama Aksiyon Özeti</h3>
             
             <div class="brief-section">
                 <div class="brief-title">📢 İletişim Tonu</div>
-                <div class="brief-content" style="color:#fcd34d;">{tone}</div>
+                <div class="brief-content" style="color:#fcd34d;">{tone_safe}</div>
             </div>
             
             <div class="brief-section">
                 <div class="brief-title">🧠 Ana Strateji</div>
-                <div class="brief-content">{strategy}</div>
+                <div class="brief-content">{strategy_safe}</div>
             </div>
             
             <div class="brief-section">
                 <div class="brief-title">⚡ Kampanya Kurgusu</div>
-                <div class="brief-content" style="font-weight:bold; color:#6ee7b7;">{tactic}</div>
+                <div class="brief-content" style="font-weight:bold; color:#6ee7b7;">{tactic_safe}</div>
             </div>
             
             <div style="margin-top:15px;">
                 <span style="background:#1e293b; color:#94a3b8; padding:8px 15px; border-radius:8px; font-size:0.85rem; border:1px solid #334155;">
-                    📡 Önerilen Kanal: <b style="color:white;">{channel}</b>
+                    📡 Önerilen Kanal: <b style="color:white;">{channel_safe}</b>
                 </span>
             </div>
         </div>
