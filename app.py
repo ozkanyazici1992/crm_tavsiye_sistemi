@@ -15,7 +15,7 @@ st.markdown("""
 <style>
     /* 1. Arka Plan ve Ana Fontlar */
     .stApp {
-        background: radial-gradient(circle at 50% 0%, #2e1065 0%, #020617 80%); /* Mor-Siyah Geçişi */
+        background: radial-gradient(circle at 50% 0%, #2e1065 0%, #020617 80%);
         color: #ffffff;
         font-family: 'Inter', sans-serif;
     }
@@ -31,10 +31,10 @@ st.markdown("""
         background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(139, 92, 246, 0.2); /* Mor Çerçeve */
+        border: 1px solid rgba(139, 92, 246, 0.2);
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); /* Hafif mor neon parlama */
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -43,7 +43,6 @@ st.markdown("""
         overflow: hidden;
     }
     
-    /* Kartların üzerine hafif parlama efekti */
     .glass-card::before {
         content: "";
         position: absolute;
@@ -68,8 +67,8 @@ st.markdown("""
         height: 100%;
         border-radius: 50%;
         border: 4px solid rgba(255,255,255,0.1);
-        border-top-color: #f43f5e; /* Canlı Kırmızı/Pembe */
-        border-right-color: #8b5cf6; /* Mor */
+        border-top-color: #f43f5e;
+        border-right-color: #8b5cf6;
         animation: spin 3s linear infinite;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -127,7 +126,7 @@ st.markdown("""
         font-size: 0.7rem;
         font-weight: 800;
         text-transform: uppercase;
-        color: #60a5fa; /* Açık Mavi */
+        color: #60a5fa;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -393,71 +392,64 @@ if cust_id in rfm_data.index:
     
     col_left, col_right = st.columns([1, 2.8], gap="medium")
     
-    # SOL: Müşteri Kimliği & Skoru
+    # SOL: Müşteri Kimliği & Skoru - DÜZELTME: HTML Girintileri Kaldırıldı
     with col_left:
         st.markdown(f"""
-        <div class="glass-card" style="text-align:center;">
-            <div style="font-size:0.7rem; color:#94a3b8; font-weight:bold; letter-spacing:1px; margin-bottom:10px;">MÜŞTERİ SEGMENTİ</div>
-            <div class="segment-badge">{segment_name}</div>
-            
-            <div class="score-container">
-                <div class="score-ring"></div>
-                <div class="score-val">{cust['RF_SCORE_STR']}</div>
-            </div>
-            
-            <div style="font-size:0.7rem; color:#94a3b8; margin-bottom:15px;">RFM SKORU</div>
-            
-            <div class="stat-row">
-                <div class="stat-item">
-                    <div class="stat-label">RECENCY</div>
-                    <div class="stat-value">{int(cust['Recency'])}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">FREQ</div>
-                    <div class="stat-value">{int(cust['Frequency'])}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">MONETARY</div>
-                    <div class="stat-value" style="color:#34d399;">{int(cust['Monetary'])}₺</div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+<div class="glass-card" style="text-align:center;">
+<div style="font-size:0.7rem; color:#94a3b8; font-weight:bold; letter-spacing:1px; margin-bottom:10px;">MÜŞTERİ SEGMENTİ</div>
+<div class="segment-badge">{segment_name}</div>
+<div class="score-container">
+<div class="score-ring"></div>
+<div class="score-val">{cust['RF_SCORE_STR']}</div>
+</div>
+<div style="font-size:0.7rem; color:#94a3b8; margin-bottom:15px;">RFM SKORU</div>
+<div class="stat-row">
+<div class="stat-item">
+<div class="stat-label">RECENCY</div>
+<div class="stat-value">{int(cust['Recency'])}</div>
+</div>
+<div class="stat-item">
+<div class="stat-label">FREQ</div>
+<div class="stat-value">{int(cust['Frequency'])}</div>
+</div>
+<div class="stat-item">
+<div class="stat-label">MONETARY</div>
+<div class="stat-value" style="color:#34d399;">{int(cust['Monetary'])}₺</div>
+</div>
+</div>
+</div>
+""", unsafe_allow_html=True)
 
-    # SAĞ: Pazarlama Komuta Merkezi
+    # SAĞ: Pazarlama Komuta Merkezi - DÜZELTME: HTML Girintileri Kaldırıldı
     with col_right:
         st.markdown(f"""
-        <div class="glass-card">
-            <div class="channel-tag">
-                <span>📡</span> {channel}
-            </div>
-            
-            <div style="margin-bottom:20px;">
-                <h3 style="margin:0; font-size:1.4rem; font-weight:800; color:white;">🎯 PAZARLAMA STRATEJİSİ</h3>
-                <p style="margin:0; color:#94a3b8; font-size:0.9rem;">Bu müşteri için yapay zeka tarafından üretilen aksiyon planı.</p>
-            </div>
-            
-            <div class="action-grid">
-                <div class="ad-box" style="border-left-color:#8b5cf6;">
-                    <div class="ad-title"><span>🧠</span> ANA STRATEJİ</div>
-                    <div class="ad-content">{strategy}</div>
-                </div>
-                <div class="ad-box" style="border-left-color:#f43f5e;">
-                    <div class="ad-title"><span>📢</span> İLETİŞİM DİLİ</div>
-                    <div class="ad-content" style="font-style:italic;">"{tone}"</div>
-                </div>
-            </div>
-            
-            <div class="campaign-box">
-                <div class="campaign-icon">⚡</div>
-                <div class="campaign-text">
-                    <h4>ÖNERİLEN AKSİYON & KAMPANYA</h4>
-                    <p>{tactic}</p>
-                </div>
-            </div>
-            
-        </div>
-        """, unsafe_allow_html=True)
+<div class="glass-card">
+<div class="channel-tag">
+<span>📡</span> {channel}
+</div>
+<div style="margin-bottom:20px;">
+<h3 style="margin:0; font-size:1.4rem; font-weight:800; color:white;">🎯 PAZARLAMA STRATEJİSİ</h3>
+<p style="margin:0; color:#94a3b8; font-size:0.9rem;">Bu müşteri için yapay zeka tarafından üretilen aksiyon planı.</p>
+</div>
+<div class="action-grid">
+<div class="ad-box" style="border-left-color:#8b5cf6;">
+<div class="ad-title"><span>🧠</span> ANA STRATEJİ</div>
+<div class="ad-content">{strategy}</div>
+</div>
+<div class="ad-box" style="border-left-color:#f43f5e;">
+<div class="ad-title"><span>📢</span> İLETİŞİM DİLİ</div>
+<div class="ad-content" style="font-style:italic;">"{tone}"</div>
+</div>
+</div>
+<div class="campaign-box">
+<div class="campaign-icon">⚡</div>
+<div class="campaign-text">
+<h4>ÖNERİLEN AKSİYON & KAMPANYA</h4>
+<p>{tactic}</p>
+</div>
+</div>
+</div>
+""", unsafe_allow_html=True)
 
 else:
     st.info("⚠️ Müşteri bulunamadı.")
