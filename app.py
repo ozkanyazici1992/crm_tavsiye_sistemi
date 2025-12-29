@@ -184,7 +184,7 @@ def get_rfm_data_v3():
         rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
         return rfm, True, str(e)
 
-# --- PAZARLAMA METİNLERİ (GÜNCELLENDİ) ---
+# --- PAZARLAMA METİNLERİ (UZUN & İKNA EDİCİ) ---
 def get_marketing_brief(segment):
     briefs = {
         "Champions": (
@@ -303,6 +303,7 @@ if cust_id in rfm_data.index:
         st.markdown(f"""
 <div class="glass-card">
 <div style="text-align:center;">
+<p style="color:#94a3b8; font-size:0.75rem; font-weight:600; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">RFM SKORU (RFM SCORE)</p>
 <div class="score-circle">
 <div class="score-inner">{cust['RF_SCORE_STR']}</div>
 </div>
