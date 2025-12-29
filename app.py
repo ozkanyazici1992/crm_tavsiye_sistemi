@@ -343,33 +343,30 @@ if input_id in rfm_data.index:
 
     # SAĞ: MARKETING BRIEF
     with col_right:
-        st.markdown("""
+        st.markdown(f"""
         <div class="marketing-brief">
             <h3 style="color:white; margin-top:0; margin-bottom:25px;">📋 Pazarlama Aksiyon Özeti</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown('<div class="brief-section">', unsafe_allow_html=True)
-        st.markdown('<div class="brief-title">📢 İletişim Tonu</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="brief-content" style="color:#fcd34d;">{tone}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown('<div class="brief-section">', unsafe_allow_html=True)
-        st.markdown('<div class="brief-title">🧠 Ana Strateji</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="brief-content">{strategy}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown('<div class="brief-section">', unsafe_allow_html=True)
-        st.markdown('<div class="brief-title">⚡ Kampanya Kurgusu</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="brief-content" style="font-weight:bold; color:#6ee7b7;">{tactic}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown(f"""
-        <div style="margin-top:15px;">
-            <span style="background:#1e293b; color:#94a3b8; padding:8px 15px; border-radius:8px; font-size:0.85rem; border:1px solid #334155;">
-                📡 Önerilen Kanal: <b style="color:white;">{channel}</b>
-            </span>
-        </div>
+            
+            <div class="brief-section">
+                <div class="brief-title">📢 İletişim Tonu</div>
+                <div class="brief-content" style="color:#fcd34d;">{tone}</div>
+            </div>
+            
+            <div class="brief-section">
+                <div class="brief-title">🧠 Ana Strateji</div>
+                <div class="brief-content">{strategy}</div>
+            </div>
+            
+            <div class="brief-section">
+                <div class="brief-title">⚡ Kampanya Kurgusu</div>
+                <div class="brief-content" style="font-weight:bold; color:#6ee7b7;">{tactic}</div>
+            </div>
+            
+            <div style="margin-top:15px;">
+                <span style="background:#1e293b; color:#94a3b8; padding:8px 15px; border-radius:8px; font-size:0.85rem; border:1px solid #334155;">
+                    📡 Önerilen Kanal: <b style="color:white;">{channel}</b>
+                </span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
