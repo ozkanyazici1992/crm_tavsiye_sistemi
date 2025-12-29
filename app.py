@@ -22,16 +22,14 @@ st.markdown("""
         border-bottom: 3px solid #3b82f6;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         margin-bottom: 25px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
     .main-title {
         font-size: 2.4rem;
         font-weight: 800;
-        background: -webkit-linear-gradient(45deg, #38bdf8, #818cf8);
+        background: linear-gradient(45deg, #38bdf8, #818cf8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin: 0;
         letter-spacing: -1px;
     }
@@ -127,15 +125,18 @@ def get_rfm_data():
         df_ = pd.read_excel(sheet_url, sheet_name="Year 2009-2010", engine='openpyxl')
         df = df_.copy()
         
+        # Veri temizleme
         df.dropna(subset=["Customer ID"], inplace=True)
-        df = df[~df["Invoice"].str.contains("C", na=False)]
+        df = df[~df["Invoice"].astype(str).str.contains("C", na=False)]
         df = df[(df['Quantity'] > 0) & (df['Price'] > 0)]
         df["TotalPrice"] = df["Quantity"] * df["Price"]
         df["Customer ID"] = df["Customer ID"].astype(int)
         
+        # Tarih hesaplamaları
         last_date = df["InvoiceDate"].max()
         today_date = last_date + dt.timedelta(days=2)
         
+        # RFM hesaplama
         rfm = df.groupby('Customer ID').agg({
             'InvoiceDate': lambda date: (today_date - date.max()).days,
             'Invoice': lambda num: num.nunique(),
@@ -144,23 +145,33 @@ def get_rfm_data():
         rfm.columns = ['Recency', 'Frequency', 'Monetary']
         rfm = rfm[rfm["Monetary"] > 0]
         
+        # Skorlama
         rfm["recency_score"] = pd.qcut(rfm['Recency'], 5, labels=[5, 4, 3, 2, 1])
         rfm["frequency_score"] = pd.qcut(rfm['Frequency'].rank(method="first"), 5, labels=[1, 2, 3, 4, 5])
         
         rfm["RF_SCORE_STR"] = (rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str))
         
+        # Segmentasyon
         seg_map = {
-            r'[1-2][1-2]': 'Hibernating', r'[1-2][3-4]': 'At Risk',
-            r'[1-2]5': 'Cant Loose', r'3[1-2]': 'About to Sleep',
-            r'33': 'Need Attention', r'[3-4][4-5]': 'Loyal Customers',
-            r'41': 'Promising', r'51': 'New Customers',
-            r'[4-5][2-3]': 'Potential Loyalists', r'5[4-5]': 'Champions'
+            r'[1-2][1-2]': 'Hibernating', 
+            r'[1-2][3-4]': 'At Risk',
+            r'[1-2]5': 'Cant Loose', 
+            r'3[1-2]': 'About to Sleep',
+            r'33': 'Need Attention', 
+            r'[3-4][4-5]': 'Loyal Customers',
+            r'41': 'Promising', 
+            r'51': 'New Customers',
+            r'[4-5][2-3]': 'Potential Loyalists', 
+            r'5[4-5]': 'Champions'
         }
         rfm['Segment'] = rfm['RF_SCORE_STR'].replace(seg_map, regex=True)
         return rfm
 
-    except Exception:
-        ids = np.random.randint(1000, 9999, 100)
+    except Exception as e:
+        st.error(f"Veri yükleme hatası: {str(e)}. Demo veri kullanılıyor.")
+        # Demo veri
+        np.random.seed(42)
+        ids = np.random.randint(10000, 99999, 100)
         rfm = pd.DataFrame({
             'Recency': np.random.randint(1, 100, 100),
             'Frequency': np.random.randint(1, 20, 100),
@@ -259,11 +270,6 @@ st.markdown("""
         <h1 class="main-title">Müşteri Zekası ve Sadakat Arama</h1>
         <p style="color:#94a3b8; margin:0; margin-top:5px;">AI Destekli Büyüme & Pazarlama Analitiği</p>
     </div>
-    <div style="text-align:right;">
-        <span style="background:#334155; color:#cbd5e1; padding:5px 10px; border-radius:5px; font-size:0.8rem;">
-            v4.0 Enterprise
-        </span>
-    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -271,7 +277,7 @@ st.markdown("""
 with st.spinner('Analiz motoru çalışıyor...'):
     rfm_data = get_rfm_data()
 
-# Seçim Mantığı
+# Session state başlatma
 if 'selected_cust' not in st.session_state:
     st.session_state.selected_cust = int(rfm_data.index[0])
 
@@ -284,13 +290,19 @@ with c_search:
     st.markdown("##### 🔍 Müşteri Sorgula")
     c_in, c_btn = st.columns([3, 1])
     with c_in:
-        input_id = st.number_input("ID Giriniz:", value=st.session_state.selected_cust, label_visibility="collapsed")
+        input_id = st.number_input(
+            "ID Giriniz:", 
+            value=st.session_state.selected_cust, 
+            label_visibility="collapsed",
+            step=1
+        )
     with c_btn:
-        st.button("🎲 Rastgele Analiz", on_click=pick_random, use_container_width=True)
+        st.button("🎲 Rastgele", on_click=pick_random, use_container_width=True)
+
 with c_refresh:
     st.write("")
     st.write("")
-    if st.button("🔄 Yenile"):
+    if st.button("🔄 Yenile", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
 
@@ -315,21 +327,21 @@ if input_id in rfm_data.index:
             
             <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
                 <span style="color:#cbd5e1;">Son İşlem (Recency):</span>
-                <span style="color:#38bdf8; font-weight:bold;">{cust['Recency']} Gün</span>
+                <span style="color:#38bdf8; font-weight:bold;">{int(cust['Recency'])} Gün</span>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
                 <span style="color:#cbd5e1;">İşlem Sıklığı (Freq):</span>
-                <span style="color:#38bdf8; font-weight:bold;">{cust['Frequency']} Kez</span>
+                <span style="color:#38bdf8; font-weight:bold;">{int(cust['Frequency'])} Kez</span>
             </div>
             <div style="display:flex; justify-content:space-between;">
                 <span style="color:#cbd5e1;">Toplam Hacim (Monetary):</span>
-                <span style="color:#38bdf8; font-weight:bold;">₺{cust['Monetary']:,.0f}</span>
+                <span style="color:#38bdf8; font-weight:bold;">₺{cust['Monetary']:,.2f}</span>
             </div>
         </div>
         """
         st.markdown(score_html, unsafe_allow_html=True)
 
-    # SAĞ: MARKETING BRIEF (DÜZELTİLMİŞ)
+    # SAĞ: MARKETING BRIEF
     with col_right:
         brief_html = f"""
         <div class="marketing-brief">
@@ -360,4 +372,6 @@ if input_id in rfm_data.index:
         st.markdown(brief_html, unsafe_allow_html=True)
 
 else:
-    st.warning("⚠️ Bu ID veritabanında bulunamadı. Lütfen geçerli bir ID girin.")
+    st.warning(f"⚠️ Müşteri ID {int(input_id)} veritabanında bulunamadı. Lütfen geçerli bir ID girin.")
+    st.info(f"📊 Mevcut müşteri sayısı: {len(rfm_data)}")
+    st.info(f"🔢 ID aralığı: {rfm_data.index.min()} - {rfm_data.index.max()}")
