@@ -118,6 +118,7 @@ st.markdown("""
 # -----------------------------------------------------------------------------
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_rfm_data():
+    # Not: Buradaki ID herkese açık değilse try-except bloğu devreye girip demo veri üretecektir.
     file_id = '1MUbla2YNYsd7sq61F8QL4OBnitw8tsEE'
     sheet_url = f'https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx'
     
@@ -151,7 +152,7 @@ def get_rfm_data():
         
         rfm["RF_SCORE_STR"] = (rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str))
         
-        # Segmentasyon
+        # Segmentasyon Regex Haritası
         seg_map = {
             r'[1-2][1-2]': 'Hibernating', 
             r'[1-2][3-4]': 'At Risk',
@@ -168,19 +169,27 @@ def get_rfm_data():
         return rfm
 
     except Exception as e:
-        st.error(f"Veri yükleme hatası: {str(e)}. Demo veri kullanılıyor.")
-        # Demo veri
+        # Hata durumunda (internet yoksa veya dosya erişimi yoksa) demo veri döner
+        st.toast(f"Veri bağlantısı kurulamadı, Demo Mod aktif. Hata: {str(e)}", icon="⚠️")
+        
+        # Demo veri üretimi
         np.random.seed(42)
         ids = np.random.randint(10000, 99999, 100)
+        
+        segments_list = ['Champions', 'Loyal Customers', 'Hibernating', 'At Risk', 'New Customers']
+        
         rfm = pd.DataFrame({
-            'Recency': np.random.randint(1, 100, 100),
-            'Frequency': np.random.randint(1, 20, 100),
-            'Monetary': np.random.uniform(200, 5000, 100),
+            'Recency': np.random.randint(1, 365, 100),
+            'Frequency': np.random.randint(1, 50, 100),
+            'Monetary': np.random.uniform(200, 15000, 100),
             'recency_score': np.random.randint(1, 6, 100),
             'frequency_score': np.random.randint(1, 6, 100)
         }, index=ids)
+        
         rfm["RF_SCORE_STR"] = rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str)
-        rfm['Segment'] = "Champions"
+        # Rastgele segment atama (demo için)
+        rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
+        
         return rfm
 
 # --- PAZARLAMA BRIEF SÖZLÜĞÜ ---
@@ -279,10 +288,14 @@ with st.spinner('Analiz motoru çalışıyor...'):
 
 # Session state başlatma
 if 'selected_cust' not in st.session_state:
-    st.session_state.selected_cust = int(rfm_data.index[0])
+    if not rfm_data.empty:
+        st.session_state.selected_cust = int(rfm_data.index[0])
+    else:
+        st.session_state.selected_cust = 0
 
 def pick_random():
-    st.session_state.selected_cust = int(random.choice(rfm_data.index.tolist()))
+    if not rfm_data.empty:
+        st.session_state.selected_cust = int(random.choice(rfm_data.index.tolist()))
 
 # KONTROL PANELİ
 c_search, c_refresh = st.columns([4, 1])
@@ -376,4 +389,5 @@ if input_id in rfm_data.index:
 else:
     st.warning(f"⚠️ Müşteri ID {int(input_id)} veritabanında bulunamadı. Lütfen geçerli bir ID girin.")
     st.info(f"📊 Mevcut müşteri sayısı: {len(rfm_data)}")
-    st.info(f"🔢 ID aralığı: {rfm_data.index.min()} - {rfm_data.index.max()}")
+    if not rfm_data.empty:
+        st.info(f"🔢 ID aralığı: {rfm_data.index.min()} - {rfm_data.index.max()}")
