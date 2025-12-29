@@ -9,7 +9,7 @@ from io import BytesIO
 # -----------------------------------------------------------------------------
 # 1. SAYFA AYARLARI & CSS (MODERN GLASS DESIGN)
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="CRM Pro X", layout="wide", page_icon="💎")
+st.set_page_config(page_title="Veriden Aksiyona", layout="wide", page_icon="🚀")
 
 st.markdown("""
 <style>
@@ -120,6 +120,32 @@ st.markdown("""
         color: white !important;
         border-radius: 8px;
     }
+    
+    /* 6. Başlık ve Alt Başlık Stili */
+    .app-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .app-title {
+        margin: 0;
+        font-weight: 900;
+        font-size: 2rem;
+        background: linear-gradient(to right, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.1;
+        letter-spacing: -1px;
+    }
+    .app-subtitle {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #cbd5e1;
+        font-weight: 400;
+        margin-top: 5px;
+        letter-spacing: 0.5px;
+        opacity: 0.8;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -184,7 +210,7 @@ def get_rfm_data_v3():
         rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
         return rfm, True, str(e)
 
-# --- PAZARLAMA METİNLERİ (GÜNCELLENDİ: TÜRKÇE + İNGİLİZCE BAŞLIKLAR) ---
+# --- PAZARLAMA METİNLERİ (TÜRKÇE + İNGİLİZCE BAŞLIKLAR & UZUN METİNLER) ---
 def get_marketing_brief(segment):
     briefs = {
         "Champions": (
@@ -276,10 +302,15 @@ def pick_random():
     if not rfm_data.empty:
         st.session_state.selected_cust = int(random.choice(rfm_data.index.tolist()))
 
-# ÜST BAR
+# ÜST BAR (GÜNCELLENEN BAŞLIK)
 c1, c2, c3, c4 = st.columns([4, 1.5, 0.8, 0.4], gap="small")
 with c1:
-    st.markdown("<h2 style='margin:0; padding-top:5px; font-weight:800; background:linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent;'>💎 Müşteri Zekası</h2>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="app-header">
+        <h2 class="app-title">Veriden Aksiyona</h2>
+        <p class="app-subtitle">Yapay Zeka Tabanlı Müşteri Yönetimi</p>
+    </div>
+    """, unsafe_allow_html=True)
 with c2:
     cust_id = st.number_input("Müşteri ID", value=st.session_state.selected_cust, step=1, label_visibility="collapsed")
 with c3:
@@ -298,7 +329,7 @@ if cust_id in rfm_data.index:
     
     col_left, col_right = st.columns([1, 2.5], gap="medium")
     
-    # HTML KODLARINI SOLA YASLADIK (Fix)
+    # SOL: Profil
     with col_left:
         st.markdown(f"""
 <div class="glass-card">
@@ -326,6 +357,7 @@ if cust_id in rfm_data.index:
 </div>
 """, unsafe_allow_html=True)
 
+    # SAĞ: Strateji
     with col_right:
         st.markdown(f"""
 <div class="glass-card">
