@@ -124,7 +124,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. VERİ MOTORU (GÜÇLENDİRİLMİŞ)
+# 2. VERİ MOTORU
 # -----------------------------------------------------------------------------
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_rfm_data_v3():
@@ -139,14 +139,12 @@ def get_rfm_data_v3():
         df_ = pd.read_excel(file_content, sheet_name="Year 2009-2010", engine='openpyxl')
         df = df_.copy()
         
-        # Temizlik
         df.dropna(subset=["Customer ID"], inplace=True)
         df = df[~df["Invoice"].astype(str).str.contains("C", na=False)]
         df = df[(df['Quantity'] > 0) & (df['Price'] > 0)]
         df["TotalPrice"] = df["Quantity"] * df["Price"]
         df["Customer ID"] = df["Customer ID"].astype(int)
         
-        # RFM Hesaplama
         last_date = df["InvoiceDate"].max()
         today_date = last_date + dt.timedelta(days=2)
         
@@ -158,12 +156,10 @@ def get_rfm_data_v3():
         rfm.columns = ['Recency', 'Frequency', 'Monetary']
         rfm = rfm[rfm["Monetary"] > 0]
         
-        # Skorlama
         rfm["recency_score"] = pd.qcut(rfm['Recency'], 5, labels=[5, 4, 3, 2, 1])
         rfm["frequency_score"] = pd.qcut(rfm['Frequency'].rank(method="first"), 5, labels=[1, 2, 3, 4, 5])
         rfm["RF_SCORE_STR"] = (rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str))
         
-        # Segmentasyon
         seg_map = {
             r'[1-2][1-2]': 'Hibernating', r'[1-2][3-4]': 'At Risk', r'[1-2]5': 'Cant Loose',
             r'3[1-2]': 'About to Sleep', r'33': 'Need Attention', r'[3-4][4-5]': 'Loyal Customers',
@@ -174,7 +170,6 @@ def get_rfm_data_v3():
         return rfm, False, None
 
     except Exception as e:
-        # Demo Veri
         np.random.seed(42)
         ids = np.random.randint(10000, 99999, 100)
         segments_list = ['Champions', 'Loyal Customers', 'Hibernating', 'At Risk', 'New Customers']
@@ -208,7 +203,6 @@ def get_marketing_brief(segment):
 # 3. SAYFA DÜZENİ
 # -----------------------------------------------------------------------------
 
-# Veri Yükle
 rfm_data, is_demo, error_msg = get_rfm_data_v3()
 
 if is_demo and error_msg:
@@ -221,7 +215,7 @@ def pick_random():
     if not rfm_data.empty:
         st.session_state.selected_cust = int(random.choice(rfm_data.index.tolist()))
 
-# --- ÜST BAR (HEADER) ---
+# ÜST BAR
 c1, c2, c3, c4 = st.columns([4, 1.5, 0.8, 0.4], gap="small")
 with c1:
     st.markdown("<h2 style='margin:0; padding-top:5px; font-weight:800; background:linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent;'>💎 Müşteri Zekası</h2>", unsafe_allow_html=True)
@@ -236,69 +230,64 @@ with c4:
 
 st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
 
-# --- ANA İÇERİK ---
+# ANA İÇERİK
 if cust_id in rfm_data.index:
     cust = rfm_data.loc[cust_id]
     segment_name, tone, strategy, tactic, channel = get_marketing_brief(cust['Segment'])
     
     col_left, col_right = st.columns([1, 2.5], gap="medium")
     
-    # --- SOL: PROFİL KARTI ---
+    # --- DÜZELTME: HTML KODLARI SOLA YASLANDI ---
     with col_left:
         st.markdown(f"""
 <div class="glass-card">
-    <div style="text-align:center;">
-        <div class="score-circle">
-            <div class="score-inner">{cust['RF_SCORE_STR']}</div>
-        </div>
-        <div class="segment-badge">{segment_name}</div>
-    </div>
-    
-    <div class="kpi-row">
-        <div class="kpi-box">
-            <div class="kpi-label">SON İŞLEM</div>
-            <div class="kpi-value">{int(cust['Recency'])} GÜN</div>
-        </div>
-        <div class="kpi-box">
-            <div class="kpi-label">SIKLIK</div>
-            <div class="kpi-value">{int(cust['Frequency'])} KEZ</div>
-        </div>
-    </div>
-    
-    <div class="kpi-box" style="margin-top:10px;">
-        <div class="kpi-label">TOPLAM HARCAMA (LTV)</div>
-        <div class="kpi-value" style="color:#4ade80; font-size:1.3rem;">₺{cust['Monetary']:,.2f}</div>
-    </div>
+<div style="text-align:center;">
+<div class="score-circle">
+<div class="score-inner">{cust['RF_SCORE_STR']}</div>
+</div>
+<div class="segment-badge">{segment_name}</div>
+</div>
+<div class="kpi-row">
+<div class="kpi-box">
+<div class="kpi-label">SON İŞLEM</div>
+<div class="kpi-value">{int(cust['Recency'])} GÜN</div>
+</div>
+<div class="kpi-box">
+<div class="kpi-label">SIKLIK</div>
+<div class="kpi-value">{int(cust['Frequency'])} KEZ</div>
+</div>
+</div>
+<div class="kpi-box" style="margin-top:10px;">
+<div class="kpi-label">TOPLAM HARCAMA (LTV)</div>
+<div class="kpi-value" style="color:#4ade80; font-size:1.3rem;">₺{cust['Monetary']:,.2f}</div>
+</div>
 </div>
 """, unsafe_allow_html=True)
 
-    # --- SAĞ: STRATEJİ & AKSİYON (HTML) ---
     with col_right:
         st.markdown(f"""
 <div class="glass-card">
-    <div class="strategy-grid">
-        <div class="info-box" style="border-color:#fcd34d;">
-            <div class="box-title" style="color:#fcd34d;">🧠 ANA STRATEJİ</div>
-            <div class="box-content">{strategy}</div>
-        </div>
-        <div class="info-box" style="border-color:#38bdf8;">
-            <div class="box-title" style="color:#38bdf8;">📢 İLETİŞİM TONU</div>
-            <div class="box-content" style="font-style:italic;">"{tone}"</div>
-        </div>
-    </div>
-    
-    <div style="display:flex; gap:15px; align-items:stretch;">
-        <div class="info-box" style="border-color:#10b981; flex-grow:1;">
-            <div class="box-title" style="color:#34d399;">⚡ ÖNERİLEN AKSİYON</div>
-            <div class="box-content" style="font-weight:700; color:#fff;">{tactic}</div>
-        </div>
-        
-        <div style="background:rgba(15,23,42,0.5); border:1px solid #334155; border-radius:10px; padding:15px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:110px;">
-            <div style="font-size:1.8rem;">📡</div>
-            <div style="font-size:0.65rem; color:#94a3b8; margin-top:5px; font-weight:bold;">KANAL</div>
-            <div style="font-size:0.85rem; font-weight:bold; color:#e2e8f0; text-align:center;">{channel}</div>
-        </div>
-    </div>
+<div class="strategy-grid">
+<div class="info-box" style="border-color:#fcd34d;">
+<div class="box-title" style="color:#fcd34d;">🧠 ANA STRATEJİ</div>
+<div class="box-content">{strategy}</div>
+</div>
+<div class="info-box" style="border-color:#38bdf8;">
+<div class="box-title" style="color:#38bdf8;">📢 İLETİŞİM TONU</div>
+<div class="box-content" style="font-style:italic;">"{tone}"</div>
+</div>
+</div>
+<div style="display:flex; gap:15px; align-items:stretch;">
+<div class="info-box" style="border-color:#10b981; flex-grow:1;">
+<div class="box-title" style="color:#34d399;">⚡ ÖNERİLEN AKSİYON</div>
+<div class="box-content" style="font-weight:700; color:#fff;">{tactic}</div>
+</div>
+<div style="background:rgba(15,23,42,0.5); border:1px solid #334155; border-radius:10px; padding:15px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:110px;">
+<div style="font-size:1.8rem;">📡</div>
+<div style="font-size:0.65rem; color:#94a3b8; margin-top:5px; font-weight:bold;">KANAL</div>
+<div style="font-size:0.85rem; font-weight:bold; color:#e2e8f0; text-align:center;">{channel}</div>
+</div>
+</div>
 </div>
 """, unsafe_allow_html=True)
 
