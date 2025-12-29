@@ -184,74 +184,74 @@ def get_rfm_data_v3():
         rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
         return rfm, True, str(e)
 
-# --- PAZARLAMA METİNLERİ (UZUN & İKNA EDİCİ) ---
+# --- PAZARLAMA METİNLERİ (GÜNCELLENDİ: TÜRKÇE + İNGİLİZCE BAŞLIKLAR) ---
 def get_marketing_brief(segment):
     briefs = {
         "Champions": (
-            "Marka Elçisi", 
+            "Marka Elçisi (Champions)", 
             "⭐ Hayranlık Uyandırıcı", 
             "İndirim yok, 'Ayrıcalık' var.", 
             "Sizi en değerli müşterilerimiz arasında görmekten mutluluk duyuyoruz. CEO'muzun özel teşekkür notuyla birlikte, henüz satışa çıkmamış yeni koleksiyonumuza 24 saat önceden erişim hakkı tanımladık.", 
             "VIP WhatsApp"
         ),
         "Loyal Customers": (
-            "Sadık Müşteri", 
+            "Sadık Müşteri (Loyal Customers)", 
             "🤝 Samimi", 
             "Sepet ortalamasını (AOV) artır.", 
             "Sadakatiniz bizim için çok değerli. Son aldığınız ürünlerle mükemmel uyum sağlayacak tamamlayıcı ürünlerde geçerli %15 ekstra indirim fırsatını kaçırmayın.", 
             "Mobil Uygulama"
         ),
         "Cant Loose": (
-            "Kritik Kayıp", 
+            "Kritik Kayıp (Can't Lose)", 
             "🆘 Acil", 
             "Yıldız müşteriyi kaybetme.", 
             "Sizin gibi değerli bir müşterimizin sessizliği bizi endişelendiriyor. Herhangi bir sorununuz varsa çözmek ve size özel tanımladığımız 'Geri Dönüş Hediyesi'ni iletmek için müşteri temsilcimiz sizi arayacak.", 
             "Telefon"
         ),
         "At Risk": (
-            "Risk Grubu", 
+            "Risk Grubu (At Risk)", 
             "💌 Duygusal", 
             "Bağı yeniden kur.", 
             "Sizi ve alışveriş tercihlerinizi gerçekten özledik. Aramıza dönmeniz şerefine, alt limit şartı olmadan kullanabileceğiniz size özel bir indirim kuponu hesabınıza tanımlandı.", 
             "SMS / Mail"
         ),
         "New Customers": (
-            "Yeni Müşteri", 
+            "Yeni Müşteri (New Customers)", 
             "🌱 Öğretici", 
             "Alışkanlık yarat.", 
             "Aramıza hoş geldiniz! Deneyiminiz bizim için çok önemli, kısa anketimizi doldurarak hem görüşlerinizi paylaşın hem de bir sonraki alışverişinizde geçerli Hoşgeldin Puanlarınızı hemen kazanın.", 
             "Mail Serisi"
         ),
         "Potential Loyalists": (
-            "Potansiyel", 
+            "Potansiyel Sadık (Potential Loyalists)", 
             "📈 Teşvik", 
             "Topluluğa kat.", 
             "Alışveriş tutkunuzu bir üst seviyeye taşımanın tam zamanı. Sadakat Kulübümüze (Loyalty Club) hemen katılın, hem özel fırsatlardan yararlanın hem de tüm siparişlerinizde kargo bedava ayrıcalığını yaşayın.", 
             "Site İçi Pop-up"
         ),
         "Hibernating": (
-            "Uykuda", 
+            "Uykuda (Hibernating)", 
             "💤 Sakin", 
             "Rahatsız etme.", 
             "Uzun zamandır görüşemedik ama harika bir haberimiz var! Sadece sezonun en büyük indirim günlerinde geçerli olan, eski dostlarımıza özel 'Efsane Dönüş' fırsatlarını sizin için derledik.", 
             "Mail (Az)"
         ),
         "Need Attention": (
-            "İlgi Bekliyor", 
+            "İlgi Bekliyor (Need Attention)", 
             "🔔 Uyarıcı", 
             "Zaman baskısı yarat (FOMO).", 
             "Sepetinizdeki ürünler tükenmek üzere, acele edin! Sadece önümüzdeki 24 saat boyunca geçerli olan bu fırsatı kaçırmamak için alışverişinizi şimdi tamamlayın.", 
             "Push Bildirim"
         ),
         "Promising": (
-            "Umut Vaat Eden", 
+            "Umut Vaat Eden (Promising)", 
             "🎁 Şaşırtıcı", 
             "Akılda kal.", 
             "Sizi tekrar görmek harika! Siparişinizi hazırlarken içine küçük bir sürpriz ekledik. Deneyiminizi zenginleştirecek ücretsiz numune ürününüzü paketinizi açtığınızda keşfedebilirsiniz.", 
             "Kutu Deneyimi"
         ),
         "About to Sleep": (
-            "Soğuma", 
+            "Soğuma (About to Sleep)", 
             "🔥 Trend", 
             "Sosyal kanıt kullan.", 
             "Trendleri kaçırmanızı istemeyiz, bu hafta herkesin konuştuğu ürünleri sizin için listeledik. En çok tercih edilenler listemize göz atarak popüler ürünleri keşfetmeye hemen başlayın.", 
