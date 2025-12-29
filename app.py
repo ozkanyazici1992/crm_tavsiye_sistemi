@@ -3,6 +3,8 @@ import datetime as dt
 import pandas as pd
 import random
 import numpy as np
+import requests
+from io import BytesIO
 
 # -----------------------------------------------------------------------------
 # 1. AYARLAR & CSS
@@ -122,7 +124,12 @@ def get_rfm_data():
     sheet_url = f'https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx'
     
     try:
-        df_ = pd.read_excel(sheet_url, sheet_name="Year 2009-2010", engine='openpyxl')
+        # GÜNCELLEME: Dosyayı önce requests ile indiriyoruz (Daha sağlam bağlantı)
+        response = requests.get(sheet_url, timeout=30)
+        response.raise_for_status() # Hata varsa fırlat
+        file_content = BytesIO(response.content)
+        
+        df_ = pd.read_excel(file_content, sheet_name="Year 2009-2010", engine='openpyxl')
         df = df_.copy()
         
         # Veri temizleme
@@ -332,7 +339,6 @@ if input_id in rfm_data.index:
     
     # SOL: RFM SKOR KARTI
     with col_left:
-        # GÖRÜNÜM DÜZELTME: HTML kodu sola yaslandı.
         score_html = f"""
 <div class="score-card">
     <p style="color:#94a3b8; font-size:0.85rem; text-transform:uppercase; margin-bottom:5px;">RFM Performans Skoru</p>
