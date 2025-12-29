@@ -28,8 +28,8 @@ st.markdown("""
     
     /* 2. Cam Efektli Kartlar (Glassmorphism) */
     .glass-card {
-        background: rgba(30, 41, 59, 0.4); /* Yarı saydam koyu mavi */
-        backdrop-filter: blur(12px);         /* Buzlu cam efekti */
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 16px;
@@ -245,62 +245,64 @@ if cust_id in rfm_data.index:
     
     # --- SOL: PROFİL KARTI ---
     with col_left:
+        # BURADA HTML KODLARINI SOLA YASLADIK (Fix)
         st.markdown(f"""
-        <div class="glass-card">
-            <div style="text-align:center;">
-                <div class="score-circle">
-                    <div class="score-inner">{cust['RF_SCORE_STR']}</div>
-                </div>
-                <div class="segment-badge">{segment_name}</div>
-            </div>
-            
-            <div class="kpi-row">
-                <div class="kpi-box">
-                    <div class="kpi-label">SON İŞLEM</div>
-                    <div class="kpi-value">{int(cust['Recency'])} GÜN</div>
-                </div>
-                <div class="kpi-box">
-                    <div class="kpi-label">SIKLIK</div>
-                    <div class="kpi-value">{int(cust['Frequency'])} KEZ</div>
-                </div>
-            </div>
-            
-            <div class="kpi-box" style="margin-top:10px;">
-                <div class="kpi-label">TOPLAM HARCAMA (LTV)</div>
-                <div class="kpi-value" style="color:#4ade80; font-size:1.3rem;">₺{cust['Monetary']:,.2f}</div>
-            </div>
+<div class="glass-card">
+    <div style="text-align:center;">
+        <div class="score-circle">
+            <div class="score-inner">{cust['RF_SCORE_STR']}</div>
         </div>
-        """, unsafe_allow_html=True)
+        <div class="segment-badge">{segment_name}</div>
+    </div>
+    
+    <div class="kpi-row">
+        <div class="kpi-box">
+            <div class="kpi-label">SON İŞLEM</div>
+            <div class="kpi-value">{int(cust['Recency'])} GÜN</div>
+        </div>
+        <div class="kpi-box">
+            <div class="kpi-label">SIKLIK</div>
+            <div class="kpi-value">{int(cust['Frequency'])} KEZ</div>
+        </div>
+    </div>
+    
+    <div class="kpi-box" style="margin-top:10px;">
+        <div class="kpi-label">TOPLAM HARCAMA (LTV)</div>
+        <div class="kpi-value" style="color:#4ade80; font-size:1.3rem;">₺{cust['Monetary']:,.2f}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     # --- SAĞ: STRATEJİ & AKSİYON (HTML) ---
     with col_right:
+        # BURADA DA HTML KODLARINI SOLA YASLADIK (Fix)
         st.markdown(f"""
-        <div class="glass-card">
-            <div class="strategy-grid">
-                <div class="info-box" style="border-color:#fcd34d;">
-                    <div class="box-title" style="color:#fcd34d;">🧠 ANA STRATEJİ</div>
-                    <div class="box-content">{strategy}</div>
-                </div>
-                <div class="info-box" style="border-color:#38bdf8;">
-                    <div class="box-title" style="color:#38bdf8;">📢 İLETİŞİM TONU</div>
-                    <div class="box-content" style="font-style:italic;">"{tone}"</div>
-                </div>
-            </div>
-            
-            <div style="display:flex; gap:15px; align-items:stretch;">
-                <div class="info-box" style="border-color:#10b981; flex-grow:1;">
-                    <div class="box-title" style="color:#34d399;">⚡ ÖNERİLEN AKSİYON</div>
-                    <div class="box-content" style="font-weight:700; color:#fff;">{tactic}</div>
-                </div>
-                
-                <div style="background:rgba(15,23,42,0.5); border:1px solid #334155; border-radius:10px; padding:15px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:110px;">
-                    <div style="font-size:1.8rem;">📡</div>
-                    <div style="font-size:0.65rem; color:#94a3b8; margin-top:5px; font-weight:bold;">KANAL</div>
-                    <div style="font-size:0.85rem; font-weight:bold; color:#e2e8f0; text-align:center;">{channel}</div>
-                </div>
-            </div>
+<div class="glass-card">
+    <div class="strategy-grid">
+        <div class="info-box" style="border-color:#fcd34d;">
+            <div class="box-title" style="color:#fcd34d;">🧠 ANA STRATEJİ</div>
+            <div class="box-content">{strategy}</div>
         </div>
-        """, unsafe_allow_html=True)
+        <div class="info-box" style="border-color:#38bdf8;">
+            <div class="box-title" style="color:#38bdf8;">📢 İLETİŞİM TONU</div>
+            <div class="box-content" style="font-style:italic;">"{tone}"</div>
+        </div>
+    </div>
+    
+    <div style="display:flex; gap:15px; align-items:stretch;">
+        <div class="info-box" style="border-color:#10b981; flex-grow:1;">
+            <div class="box-title" style="color:#34d399;">⚡ ÖNERİLEN AKSİYON</div>
+            <div class="box-content" style="font-weight:700; color:#fff;">{tactic}</div>
+        </div>
+        
+        <div style="background:rgba(15,23,42,0.5); border:1px solid #334155; border-radius:10px; padding:15px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:110px;">
+            <div style="font-size:1.8rem;">📡</div>
+            <div style="font-size:0.65rem; color:#94a3b8; margin-top:5px; font-weight:bold;">KANAL</div>
+            <div style="font-size:0.85rem; font-weight:bold; color:#e2e8f0; text-align:center;">{channel}</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     # --- ALT BÖLÜM: VERİ SETİ ÖZETİ (TABLO) ---
     st.markdown("---")
