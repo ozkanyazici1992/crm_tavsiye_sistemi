@@ -118,7 +118,6 @@ st.markdown("""
 # -----------------------------------------------------------------------------
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_rfm_data():
-    # Not: Buradaki ID herkese açık değilse try-except bloğu devreye girip demo veri üretecektir.
     file_id = '1MUbla2YNYsd7sq61F8QL4OBnitw8tsEE'
     sheet_url = f'https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx'
     
@@ -171,9 +170,6 @@ def get_rfm_data():
         return rfm, False, None
 
     except Exception as e:
-        # DÜZELTME: st.toast BURADAN KALDIRILDI. 
-        # Cache içindeki fonksiyon UI elemanı (toast) çağırmamalıdır.
-        
         # Demo veri üretimi
         np.random.seed(42)
         ids = np.random.randint(10000, 99999, 100)
@@ -286,10 +282,9 @@ st.markdown("""
 
 # Veri Yükleme
 with st.spinner('Analiz motoru çalışıyor...'):
-    # Fonksiyon artık 3 değer döndürüyor
     rfm_data, is_demo, error_msg = get_rfm_data()
 
-# Hata mesajı varsa, bunu şimdi (fonksiyon dışında) gösteriyoruz
+# Hata mesajı yönetimi
 if is_demo and error_msg:
     st.toast(f"Veri bağlantısı kurulamadı, Demo Mod aktif. Hata: {error_msg}", icon="⚠️")
 
@@ -337,28 +332,27 @@ if input_id in rfm_data.index:
     
     # SOL: RFM SKOR KARTI
     with col_left:
+        # GÖRÜNÜM DÜZELTME: HTML kodu sola yaslandı.
         score_html = f"""
-        <div class="score-card">
-            <p style="color:#94a3b8; font-size:0.85rem; text-transform:uppercase; margin-bottom:5px;">RFM Performans Skoru</p>
-            <div class="rf-badge">{cust['RF_SCORE_STR']}</div>
-            <div class="segment-label">{segment_name}</div>
-            
-            <hr style="border-color:rgba(148,163,184,0.1); margin:25px 0;">
-            
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                <span style="color:#cbd5e1;">Son İşlem (Recency):</span>
-                <span style="color:#38bdf8; font-weight:bold;">{int(cust['Recency'])} Gün</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                <span style="color:#cbd5e1;">İşlem Sıklığı (Freq):</span>
-                <span style="color:#38bdf8; font-weight:bold;">{int(cust['Frequency'])} Kez</span>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-                <span style="color:#cbd5e1;">Toplam Hacim (Monetary):</span>
-                <span style="color:#38bdf8; font-weight:bold;">₺{cust['Monetary']:,.2f}</span>
-            </div>
-        </div>
-        """
+<div class="score-card">
+    <p style="color:#94a3b8; font-size:0.85rem; text-transform:uppercase; margin-bottom:5px;">RFM Performans Skoru</p>
+    <div class="rf-badge">{cust['RF_SCORE_STR']}</div>
+    <div class="segment-label">{segment_name}</div>
+    <hr style="border-color:rgba(148,163,184,0.1); margin:25px 0;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <span style="color:#cbd5e1;">Son İşlem (Recency):</span>
+        <span style="color:#38bdf8; font-weight:bold;">{int(cust['Recency'])} Gün</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <span style="color:#cbd5e1;">İşlem Sıklığı (Freq):</span>
+        <span style="color:#38bdf8; font-weight:bold;">{int(cust['Frequency'])} Kez</span>
+    </div>
+    <div style="display:flex; justify-content:space-between;">
+        <span style="color:#cbd5e1;">Toplam Hacim (Monetary):</span>
+        <span style="color:#38bdf8; font-weight:bold;">₺{cust['Monetary']:,.2f}</span>
+    </div>
+</div>
+"""
         st.markdown(score_html, unsafe_allow_html=True)
 
     # SAĞ: MARKETING BRIEF
