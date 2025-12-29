@@ -7,144 +7,209 @@ import requests
 from io import BytesIO
 
 # -----------------------------------------------------------------------------
-# 1. SAYFA AYARLARI & CSS (MODERN GLASS DESIGN)
+# 1. SAYFA AYARLARI & MARKETING CSS
 # -----------------------------------------------------------------------------
 st.set_page_config(page_title="Veriden Aksiyona", layout="wide", page_icon="🚀")
 
 st.markdown("""
 <style>
-    /* 1. Genel Yapı */
+    /* 1. Arka Plan ve Ana Fontlar */
     .stApp {
-        background: radial-gradient(circle at 50% 10%, #1e293b 0%, #020617 100%);
-        color: #e2e8f0;
+        background: radial-gradient(circle at 50% 0%, #2e1065 0%, #020617 80%); /* Mor-Siyah Geçişi */
+        color: #ffffff;
         font-family: 'Inter', sans-serif;
     }
     .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 3rem !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
         max-width: 95% !important;
     }
     header {visibility: hidden;}
     
-    /* 2. Cam Efektli Kartlar (Glassmorphism) */
+    /* 2. Kart Tasarımı (Marketing Card) */
     .glass-card {
-        background: rgba(30, 41, 59, 0.4);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(139, 92, 246, 0.2); /* Mor Çerçeve */
+        border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); /* Hafif mor neon parlama */
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
-    }
-
-    /* 3. Sol Taraf: Skor ve Profil */
-    .score-circle {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: conic-gradient(#38bdf8 0% 70%, #0f172a 70% 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 12px auto;
-        box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
-    }
-    .score-inner {
-        width: 84px;
-        height: 84px;
-        background: #0f172a;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 800;
-        color: #fff;
-    }
-    .segment-badge {
-        background: linear-gradient(90deg, #2563eb, #3b82f6);
-        color: white;
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        display: inline-block;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        position: relative;
+        overflow: hidden;
     }
     
-    /* KPI Kutucukları */
-    .kpi-row { display: flex; gap: 10px; margin-top: 15px; }
-    .kpi-box {
-        background: rgba(15, 23, 42, 0.5);
-        border-radius: 10px;
-        padding: 10px;
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.05);
-        flex: 1;
-        transition: transform 0.2s;
+    /* Kartların üzerine hafif parlama efekti */
+    .glass-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+        opacity: 0.7;
     }
-    .kpi-box:hover { transform: translateY(-2px); border-color: rgba(56, 189, 248, 0.3); }
-    .kpi-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-    .kpi-value { font-size: 1.1rem; font-weight: 700; color: #38bdf8; margin-top: 2px; }
 
-    /* 4. Sağ Taraf: Strateji HTML Yapısı */
-    .strategy-grid {
+    /* 3. Sol Taraf: Profil ve Skor */
+    .score-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 15px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .score-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 4px solid rgba(255,255,255,0.1);
+        border-top-color: #f43f5e; /* Canlı Kırmızı/Pembe */
+        border-right-color: #8b5cf6; /* Mor */
+        animation: spin 3s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .score-val {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: linear-gradient(to bottom, #fff, #cbd5e1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        z-index: 2;
+    }
+    
+    .segment-badge {
+        background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+    
+    /* KPI İstatistikleri */
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 15px;
+    }
+    .stat-item { text-align: center; width: 33%; }
+    .stat-label { font-size: 0.65rem; color: #94a3b8; letter-spacing: 1px; margin-bottom: 4px; }
+    .stat-value { font-size: 1.1rem; font-weight: 700; color: #e2e8f0; }
+
+    /* 4. Sağ Taraf: Aksiyon Alanı */
+    .action-grid {
         display: grid;
-        grid-template-columns: 1fr 1.5fr; 
+        grid-template-columns: 1fr 1fr;
         gap: 15px;
         margin-bottom: 15px;
     }
-    .info-box {
-        background: rgba(255,255,255,0.03);
-        padding: 12px 15px;
-        border-radius: 10px;
-        border-left: 4px solid #334155;
+    
+    .ad-box {
+        background: rgba(255, 255, 255, 0.03);
+        border-left: 4px solid #3b82f6;
+        padding: 15px;
+        border-radius: 0 8px 8px 0;
     }
-    .box-title {
-        font-size: 0.75rem;
+    .ad-title {
+        font-size: 0.7rem;
         font-weight: 800;
         text-transform: uppercase;
-        margin-bottom: 6px;
-        opacity: 0.9;
-    }
-    .box-content { font-size: 0.95rem; line-height: 1.4; color: #f1f5f9; }
-    
-    /* 5. Input ve Butonlar */
-    div[data-testid="stNumberInput"] input {
-        background-color: rgba(15, 23, 42, 0.6) !important;
-        border: 1px solid rgba(56, 189, 248, 0.3) !important;
-        color: white !important;
-        border-radius: 8px;
-    }
-    
-    /* 6. Başlık ve Alt Başlık Stili */
-    .app-header {
+        color: #60a5fa; /* Açık Mavi */
+        margin-bottom: 8px;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+        align-items: center;
+        gap: 6px;
     }
-    .app-title {
-        margin: 0;
-        font-weight: 900;
+    .ad-content {
+        font-size: 1rem;
+        line-height: 1.4;
+        color: #f8fafc;
+        font-weight: 500;
+    }
+    
+    /* Büyük Kampanya Kutusu */
+    .campaign-box {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 78, 59, 0.3));
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .campaign-icon {
         font-size: 2rem;
-        background: linear-gradient(to right, #38bdf8, #818cf8);
+        background: rgba(16, 185, 129, 0.2);
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: #34d399;
+    }
+    .campaign-text h4 {
+        margin: 0;
+        color: #34d399;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .campaign-text p {
+        margin: 5px 0 0 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: white;
+    }
+    
+    /* Kanal Etiketi */
+    .channel-tag {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* 5. Header Stili */
+    .main-header {
+        background: linear-gradient(to right, #8b5cf6, #ec4899);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        line-height: 1.1;
+        font-size: 2.2rem;
+        font-weight: 900;
         letter-spacing: -1px;
+        line-height: 1.2;
     }
-    .app-subtitle {
-        margin: 0;
-        font-size: 0.9rem;
-        color: #cbd5e1;
-        font-weight: 400;
-        margin-top: 5px;
-        letter-spacing: 0.5px;
-        opacity: 0.8;
+    .sub-header { color: #cbd5e1; font-size: 0.95rem; opacity: 0.8; }
+    
+    /* Input Alanı */
+    div[data-testid="stNumberInput"] input {
+        background-color: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid #475569 !important;
+        color: white !important;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -153,7 +218,7 @@ st.markdown("""
 # 2. VERİ MOTORU
 # -----------------------------------------------------------------------------
 @st.cache_data(ttl=3600, show_spinner=False)
-def get_rfm_data_v3():
+def get_rfm_data_v4():
     file_id = '1MUbla2YNYsd7sq61F8QL4OBnitw8tsEE'
     sheet_url = f'https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx'
     
@@ -161,7 +226,6 @@ def get_rfm_data_v3():
         response = requests.get(sheet_url, timeout=30)
         response.raise_for_status()
         file_content = BytesIO(response.content)
-        
         df_ = pd.read_excel(file_content, sheet_name="Year 2009-2010", engine='openpyxl')
         df = df_.copy()
         
@@ -210,7 +274,7 @@ def get_rfm_data_v3():
         rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
         return rfm, True, str(e)
 
-# --- PAZARLAMA METİNLERİ (TÜRKÇE + İNGİLİZCE BAŞLIKLAR & UZUN METİNLER) ---
+# --- PAZARLAMA METİNLERİ ---
 def get_marketing_brief(segment):
     briefs = {
         "Champions": (
@@ -287,10 +351,10 @@ def get_marketing_brief(segment):
     return briefs.get(segment, ("Bilinmeyen", "Standart", "Genel", "İletişim kurun", "E-posta"))
 
 # -----------------------------------------------------------------------------
-# 3. SAYFA DÜZENİ
+# 3. SAYFA DÜZENİ (MARKETING LAYOUT)
 # -----------------------------------------------------------------------------
 
-rfm_data, is_demo, error_msg = get_rfm_data_v3()
+rfm_data, is_demo, error_msg = get_rfm_data_v4()
 
 if is_demo and error_msg:
     st.toast("Demo Mod Aktif", icon="⚠️")
@@ -302,88 +366,98 @@ def pick_random():
     if not rfm_data.empty:
         st.session_state.selected_cust = int(random.choice(rfm_data.index.tolist()))
 
-# ÜST BAR (GÜNCELLENEN BAŞLIK)
+# --- HEADER BÖLÜMÜ ---
 c1, c2, c3, c4 = st.columns([4, 1.5, 0.8, 0.4], gap="small")
 with c1:
     st.markdown("""
-    <div class="app-header">
-        <h2 class="app-title">Veriden Aksiyona</h2>
-        <p class="app-subtitle">Yapay Zeka Tabanlı Müşteri Yönetimi</p>
+    <div>
+        <h1 class="main-header">VERİDEN AKSİYONA</h1>
+        <p class="sub-header">Yapay Zeka Tabanlı Müşteri Yönetimi</p>
     </div>
     """, unsafe_allow_html=True)
 with c2:
     cust_id = st.number_input("Müşteri ID", value=st.session_state.selected_cust, step=1, label_visibility="collapsed")
 with c3:
-    st.button("🎲", on_click=pick_random, use_container_width=True, help="Rastgele Müşteri Seç")
+    st.button("🎲", on_click=pick_random, use_container_width=True, help="Rastgele Seç")
 with c4:
     if st.button("🔄", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
 
-st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-# ANA İÇERİK
+# --- ANA DASHBOARD ---
 if cust_id in rfm_data.index:
     cust = rfm_data.loc[cust_id]
     segment_name, tone, strategy, tactic, channel = get_marketing_brief(cust['Segment'])
     
-    col_left, col_right = st.columns([1, 2.5], gap="medium")
+    col_left, col_right = st.columns([1, 2.8], gap="medium")
     
-    # SOL: Profil
+    # SOL: Müşteri Kimliği & Skoru
     with col_left:
         st.markdown(f"""
-<div class="glass-card">
-<div style="text-align:center;">
-<p style="color:#94a3b8; font-size:0.75rem; font-weight:600; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">RFM SKORU (RFM SCORE)</p>
-<div class="score-circle">
-<div class="score-inner">{cust['RF_SCORE_STR']}</div>
-</div>
-<div class="segment-badge">{segment_name}</div>
-</div>
-<div class="kpi-row">
-<div class="kpi-box">
-<div class="kpi-label">SON İŞLEM</div>
-<div class="kpi-value">{int(cust['Recency'])} GÜN</div>
-</div>
-<div class="kpi-box">
-<div class="kpi-label">SIKLIK</div>
-<div class="kpi-value">{int(cust['Frequency'])} KEZ</div>
-</div>
-</div>
-<div class="kpi-box" style="margin-top:10px;">
-<div class="kpi-label">TOPLAM HARCAMA (LTV)</div>
-<div class="kpi-value" style="color:#4ade80; font-size:1.3rem;">₺{cust['Monetary']:,.2f}</div>
-</div>
-</div>
-""", unsafe_allow_html=True)
+        <div class="glass-card" style="text-align:center;">
+            <div style="font-size:0.7rem; color:#94a3b8; font-weight:bold; letter-spacing:1px; margin-bottom:10px;">MÜŞTERİ SEGMENTİ</div>
+            <div class="segment-badge">{segment_name}</div>
+            
+            <div class="score-container">
+                <div class="score-ring"></div>
+                <div class="score-val">{cust['RF_SCORE_STR']}</div>
+            </div>
+            
+            <div style="font-size:0.7rem; color:#94a3b8; margin-bottom:15px;">RFM SKORU</div>
+            
+            <div class="stat-row">
+                <div class="stat-item">
+                    <div class="stat-label">RECENCY</div>
+                    <div class="stat-value">{int(cust['Recency'])}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">FREQ</div>
+                    <div class="stat-value">{int(cust['Frequency'])}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">MONETARY</div>
+                    <div class="stat-value" style="color:#34d399;">{int(cust['Monetary'])}₺</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # SAĞ: Strateji
+    # SAĞ: Pazarlama Komuta Merkezi
     with col_right:
         st.markdown(f"""
-<div class="glass-card">
-<div class="strategy-grid">
-<div class="info-box" style="border-color:#fcd34d;">
-<div class="box-title" style="color:#fcd34d;">🧠 ANA STRATEJİ</div>
-<div class="box-content">{strategy}</div>
-</div>
-<div class="info-box" style="border-color:#38bdf8;">
-<div class="box-title" style="color:#38bdf8;">📢 İLETİŞİM TONU</div>
-<div class="box-content" style="font-style:italic;">"{tone}"</div>
-</div>
-</div>
-<div style="display:flex; gap:15px; align-items:stretch;">
-<div class="info-box" style="border-color:#10b981; flex-grow:1;">
-<div class="box-title" style="color:#34d399;">⚡ ÖNERİLEN AKSİYON</div>
-<div class="box-content" style="font-weight:600; color:#fff;">{tactic}</div>
-</div>
-<div style="background:rgba(15,23,42,0.5); border:1px solid #334155; border-radius:10px; padding:15px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:110px;">
-<div style="font-size:1.8rem;">📡</div>
-<div style="font-size:0.65rem; color:#94a3b8; margin-top:5px; font-weight:bold;">KANAL</div>
-<div style="font-size:0.85rem; font-weight:bold; color:#e2e8f0; text-align:center;">{channel}</div>
-</div>
-</div>
-</div>
-""", unsafe_allow_html=True)
+        <div class="glass-card">
+            <div class="channel-tag">
+                <span>📡</span> {channel}
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <h3 style="margin:0; font-size:1.4rem; font-weight:800; color:white;">🎯 PAZARLAMA STRATEJİSİ</h3>
+                <p style="margin:0; color:#94a3b8; font-size:0.9rem;">Bu müşteri için yapay zeka tarafından üretilen aksiyon planı.</p>
+            </div>
+            
+            <div class="action-grid">
+                <div class="ad-box" style="border-left-color:#8b5cf6;">
+                    <div class="ad-title"><span>🧠</span> ANA STRATEJİ</div>
+                    <div class="ad-content">{strategy}</div>
+                </div>
+                <div class="ad-box" style="border-left-color:#f43f5e;">
+                    <div class="ad-title"><span>📢</span> İLETİŞİM DİLİ</div>
+                    <div class="ad-content" style="font-style:italic;">"{tone}"</div>
+                </div>
+            </div>
+            
+            <div class="campaign-box">
+                <div class="campaign-icon">⚡</div>
+                <div class="campaign-text">
+                    <h4>ÖNERİLEN AKSİYON & KAMPANYA</h4>
+                    <p>{tactic}</p>
+                </div>
+            </div>
+            
+        </div>
+        """, unsafe_allow_html=True)
 
 else:
-    st.info("⚠️ Girilen ID veritabanında bulunamadı. Lütfen listeden bir ID seçiniz.")
+    st.info("⚠️ Müşteri bulunamadı.")
