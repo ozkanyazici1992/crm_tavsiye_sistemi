@@ -166,11 +166,13 @@ def get_rfm_data():
             r'5[4-5]': 'Champions'
         }
         rfm['Segment'] = rfm['RF_SCORE_STR'].replace(seg_map, regex=True)
-        return rfm
+        
+        # (Veri Seti, Demo Mu?, Hata Mesajı)
+        return rfm, False, None
 
     except Exception as e:
-        # Hata durumunda (internet yoksa veya dosya erişimi yoksa) demo veri döner
-        st.toast(f"Veri bağlantısı kurulamadı, Demo Mod aktif. Hata: {str(e)}", icon="⚠️")
+        # DÜZELTME: st.toast BURADAN KALDIRILDI. 
+        # Cache içindeki fonksiyon UI elemanı (toast) çağırmamalıdır.
         
         # Demo veri üretimi
         np.random.seed(42)
@@ -187,10 +189,10 @@ def get_rfm_data():
         }, index=ids)
         
         rfm["RF_SCORE_STR"] = rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str)
-        # Rastgele segment atama (demo için)
         rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
         
-        return rfm
+        # (Veri Seti, Demo Mu?, Hata Mesajı)
+        return rfm, True, str(e)
 
 # --- PAZARLAMA BRIEF SÖZLÜĞÜ ---
 def get_marketing_brief(segment):
@@ -284,7 +286,12 @@ st.markdown("""
 
 # Veri Yükleme
 with st.spinner('Analiz motoru çalışıyor...'):
-    rfm_data = get_rfm_data()
+    # Fonksiyon artık 3 değer döndürüyor
+    rfm_data, is_demo, error_msg = get_rfm_data()
+
+# Hata mesajı varsa, bunu şimdi (fonksiyon dışında) gösteriyoruz
+if is_demo and error_msg:
+    st.toast(f"Veri bağlantısı kurulamadı, Demo Mod aktif. Hata: {error_msg}", icon="⚠️")
 
 # Session state başlatma
 if 'selected_cust' not in st.session_state:
