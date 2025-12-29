@@ -214,20 +214,26 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. VERİ MOTORU
+# 2. VERİ MOTORU (GELİŞMİŞ ÖNBELLEKLEME)
 # -----------------------------------------------------------------------------
+
+# Bu fonksiyon sadece veriyi indirmek ve işlemek içindir. 
+# Sonucu session_state'e atacağız.
 @st.cache_data(ttl=3600, show_spinner=False)
-def get_rfm_data_v4():
+def fetch_and_process_data():
     file_id = '1MUbla2YNYsd7sq61F8QL4OBnitw8tsEE'
     sheet_url = f'https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx'
     
     try:
-        response = requests.get(sheet_url, timeout=30)
+        # Timeout süresini 60 saniyeye çıkardık
+        response = requests.get(sheet_url, timeout=60)
         response.raise_for_status()
         file_content = BytesIO(response.content)
+        
         df_ = pd.read_excel(file_content, sheet_name="Year 2009-2010", engine='openpyxl')
         df = df_.copy()
         
+        # Temizlik ve Hesaplamalar
         df.dropna(subset=["Customer ID"], inplace=True)
         df = df[~df["Invoice"].astype(str).str.contains("C", na=False)]
         df = df[(df['Quantity'] > 0) & (df['Price'] > 0)]
@@ -259,104 +265,61 @@ def get_rfm_data_v4():
         return rfm, False, None
 
     except Exception as e:
-        np.random.seed(42)
-        ids = np.random.randint(10000, 99999, 100)
-        segments_list = ['Champions', 'Loyal Customers', 'Hibernating', 'At Risk', 'New Customers']
-        rfm = pd.DataFrame({
-            'Recency': np.random.randint(1, 365, 100),
-            'Frequency': np.random.randint(1, 50, 100),
-            'Monetary': np.random.uniform(200, 15000, 100),
-            'recency_score': np.random.randint(1, 6, 100),
-            'frequency_score': np.random.randint(1, 6, 100)
-        }, index=ids)
-        rfm["RF_SCORE_STR"] = rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str)
-        rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
-        return rfm, True, str(e)
+        # Hata durumunda demo veri döndür
+        return None, True, str(e)
+
+def generate_demo_data():
+    np.random.seed(42)
+    ids = np.random.randint(10000, 99999, 100)
+    segments_list = ['Champions', 'Loyal Customers', 'Hibernating', 'At Risk', 'New Customers']
+    rfm = pd.DataFrame({
+        'Recency': np.random.randint(1, 365, 100),
+        'Frequency': np.random.randint(1, 50, 100),
+        'Monetary': np.random.uniform(200, 15000, 100),
+        'recency_score': np.random.randint(1, 6, 100),
+        'frequency_score': np.random.randint(1, 6, 100)
+    }, index=ids)
+    rfm["RF_SCORE_STR"] = rfm['recency_score'].astype(str) + rfm['frequency_score'].astype(str)
+    rfm['Segment'] = [random.choice(segments_list) for _ in range(len(rfm))]
+    return rfm
 
 # --- PAZARLAMA METİNLERİ ---
 def get_marketing_brief(segment):
     briefs = {
-        "Champions": (
-            "Marka Elçisi (Champions)", 
-            "⭐ Hayranlık Uyandırıcı", 
-            "İndirim yok, 'Ayrıcalık' var.", 
-            "Sizi en değerli müşterilerimiz arasında görmekten mutluluk duyuyoruz. CEO'muzun özel teşekkür notuyla birlikte, henüz satışa çıkmamış yeni koleksiyonumuza 24 saat önceden erişim hakkı tanımladık.", 
-            "VIP WhatsApp"
-        ),
-        "Loyal Customers": (
-            "Sadık Müşteri (Loyal Customers)", 
-            "🤝 Samimi", 
-            "Sepet ortalamasını (AOV) artır.", 
-            "Sadakatiniz bizim için çok değerli. Son aldığınız ürünlerle mükemmel uyum sağlayacak tamamlayıcı ürünlerde geçerli %15 ekstra indirim fırsatını kaçırmayın.", 
-            "Mobil Uygulama"
-        ),
-        "Cant Loose": (
-            "Kritik Kayıp (Can't Lose)", 
-            "🆘 Acil", 
-            "Yıldız müşteriyi kaybetme.", 
-            "Sizin gibi değerli bir müşterimizin sessizliği bizi endişelendiriyor. Herhangi bir sorununuz varsa çözmek ve size özel tanımladığımız 'Geri Dönüş Hediyesi'ni iletmek için müşteri temsilcimiz sizi arayacak.", 
-            "Telefon"
-        ),
-        "At Risk": (
-            "Risk Grubu (At Risk)", 
-            "💌 Duygusal", 
-            "Bağı yeniden kur.", 
-            "Sizi ve alışveriş tercihlerinizi gerçekten özledik. Aramıza dönmeniz şerefine, alt limit şartı olmadan kullanabileceğiniz size özel bir indirim kuponu hesabınıza tanımlandı.", 
-            "SMS / Mail"
-        ),
-        "New Customers": (
-            "Yeni Müşteri (New Customers)", 
-            "🌱 Öğretici", 
-            "Alışkanlık yarat.", 
-            "Aramıza hoş geldiniz! Deneyiminiz bizim için çok önemli, kısa anketimizi doldurarak hem görüşlerinizi paylaşın hem de bir sonraki alışverişinizde geçerli Hoşgeldin Puanlarınızı hemen kazanın.", 
-            "Mail Serisi"
-        ),
-        "Potential Loyalists": (
-            "Potansiyel Sadık (Potential Loyalists)", 
-            "📈 Teşvik", 
-            "Topluluğa kat.", 
-            "Alışveriş tutkunuzu bir üst seviyeye taşımanın tam zamanı. Sadakat Kulübümüze (Loyalty Club) hemen katılın, hem özel fırsatlardan yararlanın hem de tüm siparişlerinizde kargo bedava ayrıcalığını yaşayın.", 
-            "Site İçi Pop-up"
-        ),
-        "Hibernating": (
-            "Uykuda (Hibernating)", 
-            "💤 Sakin", 
-            "Rahatsız etme.", 
-            "Uzun zamandır görüşemedik ama harika bir haberimiz var! Sadece sezonun en büyük indirim günlerinde geçerli olan, eski dostlarımıza özel 'Efsane Dönüş' fırsatlarını sizin için derledik.", 
-            "Mail (Az)"
-        ),
-        "Need Attention": (
-            "İlgi Bekliyor (Need Attention)", 
-            "🔔 Uyarıcı", 
-            "Zaman baskısı yarat (FOMO).", 
-            "Sepetinizdeki ürünler tükenmek üzere, acele edin! Sadece önümüzdeki 24 saat boyunca geçerli olan bu fırsatı kaçırmamak için alışverişinizi şimdi tamamlayın.", 
-            "Push Bildirim"
-        ),
-        "Promising": (
-            "Umut Vaat Eden (Promising)", 
-            "🎁 Şaşırtıcı", 
-            "Akılda kal.", 
-            "Sizi tekrar görmek harika! Siparişinizi hazırlarken içine küçük bir sürpriz ekledik. Deneyiminizi zenginleştirecek ücretsiz numune ürününüzü paketinizi açtığınızda keşfedebilirsiniz.", 
-            "Kutu Deneyimi"
-        ),
-        "About to Sleep": (
-            "Soğuma (About to Sleep)", 
-            "🔥 Trend", 
-            "Sosyal kanıt kullan.", 
-            "Trendleri kaçırmanızı istemeyiz, bu hafta herkesin konuştuğu ürünleri sizin için listeledik. En çok tercih edilenler listemize göz atarak popüler ürünleri keşfetmeye hemen başlayın.", 
-            "Instagram"
-        )
+        "Champions": ("Marka Elçisi (Champions)", "⭐ Hayranlık Uyandırıcı", "İndirim yok, 'Ayrıcalık' var.", "Sizi en değerli müşterilerimiz arasında görmekten mutluluk duyuyoruz. CEO'muzun özel teşekkür notuyla birlikte, henüz satışa çıkmamış yeni koleksiyonumuza 24 saat önceden erişim hakkı tanımladık.", "VIP WhatsApp"),
+        "Loyal Customers": ("Sadık Müşteri (Loyal Customers)", "🤝 Samimi", "Sepet ortalamasını (AOV) artır.", "Sadakatiniz bizim için çok değerli. Son aldığınız ürünlerle mükemmel uyum sağlayacak tamamlayıcı ürünlerde geçerli %15 ekstra indirim fırsatını kaçırmayın.", "Mobil Uygulama"),
+        "Cant Loose": ("Kritik Kayıp (Can't Lose)", "🆘 Acil", "Yıldız müşteriyi kaybetme.", "Sizin gibi değerli bir müşterimizin sessizliği bizi endişelendiriyor. Herhangi bir sorununuz varsa çözmek ve size özel tanımladığımız 'Geri Dönüş Hediyesi'ni iletmek için müşteri temsilcimiz sizi arayacak.", "Telefon"),
+        "At Risk": ("Risk Grubu (At Risk)", "💌 Duygusal", "Bağı yeniden kur.", "Sizi ve alışveriş tercihlerinizi gerçekten özledik. Aramıza dönmeniz şerefine, alt limit şartı olmadan kullanabileceğiniz size özel bir indirim kuponu hesabınıza tanımlandı.", "SMS / Mail"),
+        "New Customers": ("Yeni Müşteri (New Customers)", "🌱 Öğretici", "Alışkanlık yarat.", "Aramıza hoş geldiniz! Deneyiminiz bizim için çok önemli, kısa anketimizi doldurarak hem görüşlerinizi paylaşın hem de bir sonraki alışverişinizde geçerli Hoşgeldin Puanlarınızı hemen kazanın.", "Mail Serisi"),
+        "Potential Loyalists": ("Potansiyel Sadık (Potential Loyalists)", "📈 Teşvik", "Topluluğa kat.", "Alışveriş tutkunuzu bir üst seviyeye taşımanın tam zamanı. Sadakat Kulübümüze (Loyalty Club) hemen katılın, hem özel fırsatlardan yararlanın hem de tüm siparişlerinizde kargo bedava ayrıcalığını yaşayın.", "Site İçi Pop-up"),
+        "Hibernating": ("Uykuda (Hibernating)", "💤 Sakin", "Rahatsız etme.", "Uzun zamandır görüşemedik ama harika bir haberimiz var! Sadece sezonun en büyük indirim günlerinde geçerli olan, eski dostlarımıza özel 'Efsane Dönüş' fırsatlarını sizin için derledik.", "Mail (Az)"),
+        "Need Attention": ("İlgi Bekliyor (Need Attention)", "🔔 Uyarıcı", "Zaman baskısı yarat (FOMO).", "Sepetinizdeki ürünler tükenmek üzere, acele edin! Sadece önümüzdeki 24 saat boyunca geçerli olan bu fırsatı kaçırmamak için alışverişinizi şimdi tamamlayın.", "Push Bildirim"),
+        "Promising": ("Umut Vaat Eden (Promising)", "🎁 Şaşırtıcı", "Akılda kal.", "Sizi tekrar görmek harika! Siparişinizi hazırlarken içine küçük bir sürpriz ekledik. Deneyiminizi zenginleştirecek ücretsiz numune ürününüzü paketinizi açtığınızda keşfedebilirsiniz.", "Kutu Deneyimi"),
+        "About to Sleep": ("Soğuma (About to Sleep)", "🔥 Trend", "Sosyal kanıt kullan.", "Trendleri kaçırmanızı istemeyiz, bu hafta herkesin konuştuğu ürünleri sizin için listeledik. En çok tercih edilenler listemize göz atarak popüler ürünleri keşfetmeye hemen başlayın.", "Instagram")
     }
     return briefs.get(segment, ("Bilinmeyen", "Standart", "Genel", "İletişim kurun", "E-posta"))
 
 # -----------------------------------------------------------------------------
-# 3. SAYFA DÜZENİ (MARKETING LAYOUT)
+# 3. VERİ YÖNETİMİ & SESSION STATE (HIZ İÇİN)
 # -----------------------------------------------------------------------------
 
-rfm_data, is_demo, error_msg = get_rfm_data_v4()
+# Veri setini session state'e yükle (Sadece 1 kere çalışır)
+if 'rfm_db' not in st.session_state:
+    with st.spinner('Veri motoru başlatılıyor ve veriler işleniyor...'):
+        data, is_err, err_msg = fetch_and_process_data()
+        
+        if is_err:
+            st.toast("Online veriye erişilemedi, Demo Mod'a geçildi.", icon="⚠️")
+            st.session_state['rfm_db'] = generate_demo_data()
+            st.session_state['data_source'] = "Demo"
+        else:
+            st.toast("Veriler başarıyla yüklendi!", icon="✅")
+            st.session_state['rfm_db'] = data
+            st.session_state['data_source'] = "Live"
 
-if is_demo and error_msg:
-    st.toast("Demo Mod Aktif", icon="⚠️")
+# Artık tüm işlemler için session_state içindeki 'rfm_db' kullanılır.
+# Bu sayede her tıklamada veri tekrar indirilmez/hesaplanmaz.
+rfm_data = st.session_state['rfm_db']
 
 if 'selected_cust' not in st.session_state:
     st.session_state.selected_cust = int(rfm_data.index[0]) if not rfm_data.empty else 0
@@ -364,6 +327,12 @@ if 'selected_cust' not in st.session_state:
 def pick_random():
     if not rfm_data.empty:
         st.session_state.selected_cust = int(random.choice(rfm_data.index.tolist()))
+
+def refresh_data():
+    # Cache temizle ve yeniden yüklemeyi tetikle
+    st.cache_data.clear()
+    del st.session_state['rfm_db']
+    st.rerun()
 
 # --- HEADER BÖLÜMÜ ---
 c1, c2, c3, c4 = st.columns([4, 1.5, 0.8, 0.4], gap="small")
@@ -379,9 +348,7 @@ with c2:
 with c3:
     st.button("🎲", on_click=pick_random, use_container_width=True, help="Rastgele Seç")
 with c4:
-    if st.button("🔄", use_container_width=True):
-        st.cache_data.clear()
-        st.rerun()
+    st.button("🔄", on_click=refresh_data, use_container_width=True)
 
 st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
@@ -392,7 +359,7 @@ if cust_id in rfm_data.index:
     
     col_left, col_right = st.columns([1, 2.8], gap="medium")
     
-    # SOL: Müşteri Kimliği & Skoru - DÜZELTME: HTML Girintileri Kaldırıldı
+    # SOL: Müşteri Kimliği & Skoru - HTML Sola Yaslandı
     with col_left:
         st.markdown(f"""
 <div class="glass-card" style="text-align:center;">
@@ -420,7 +387,7 @@ if cust_id in rfm_data.index:
 </div>
 """, unsafe_allow_html=True)
 
-    # SAĞ: Pazarlama Komuta Merkezi - DÜZELTME: HTML Girintileri Kaldırıldı
+    # SAĞ: Pazarlama Komuta Merkezi - HTML Sola Yaslandı
     with col_right:
         st.markdown(f"""
 <div class="glass-card">
@@ -452,4 +419,4 @@ if cust_id in rfm_data.index:
 """, unsafe_allow_html=True)
 
 else:
-    st.info("⚠️ Müşteri bulunamadı.")
+    st.info("⚠️ Müşteri bulunamadı veya demo veri seti aktif.")
